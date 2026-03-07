@@ -3,11 +3,6 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-})
-
 const PLAN_IDS: Record<string, { amount: number; chars_limit: number }> = {
   starter:  { amount: 7900,   chars_limit: 50000 },
   standard: { amount: 14900,  chars_limit: 100000 },
@@ -17,11 +12,13 @@ const PLAN_IDS: Record<string, { amount: number; chars_limit: number }> = {
 }
 
 export async function POST(request: Request) {
-  const { plan } = await request.json()
+  const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID!,
+    key_secret: process.env.RAZORPAY_KEY_SECRET!,
+  })
 
-  if (!PLAN_IDS[plan]) {
-    return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
-  }
+  const { plan } = await request.json()
+  if (!PLAN_IDS[plan]) return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
 
   const cookieStore = await cookies()
   const supabase = createServerClient(

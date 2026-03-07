@@ -1,11 +1,6 @@
 import Razorpay from 'razorpay'
 import { NextResponse } from 'next/server'
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-})
-
 const TOPUPS: Record<string, { amount: number; chars: number }> = {
   '50k':  { amount: 7900,  chars: 50000 },
   '200k': { amount: 24900, chars: 200000 },
@@ -13,11 +8,13 @@ const TOPUPS: Record<string, { amount: number; chars: number }> = {
 }
 
 export async function POST(request: Request) {
-  const { topup } = await request.json()
+  const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID!,
+    key_secret: process.env.RAZORPAY_KEY_SECRET!,
+  })
 
-  if (!TOPUPS[topup]) {
-    return NextResponse.json({ error: 'Invalid top-up' }, { status: 400 })
-  }
+  const { topup } = await request.json()
+  if (!TOPUPS[topup]) return NextResponse.json({ error: 'Invalid top-up' }, { status: 400 })
 
   const order = await razorpay.orders.create({
     amount: TOPUPS[topup].amount,
