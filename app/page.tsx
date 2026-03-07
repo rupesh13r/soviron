@@ -178,7 +178,7 @@ export default function LandingPage() {
         .dd-signout:hover { color: #e05555; background: rgba(224,85,85,0.04); }
 
         .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 0 60px; position: relative; overflow: hidden; }
-        .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 60% at 70% 50%, rgba(107,63,160,0.12) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,168,76,0.06) 0%, transparent 60%); }
+        .hero-bg { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 60% 60% at 70% 50%, rgba(107,63,160,0.12) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,168,76,0.06) 0%, transparent 60%); }
         .hero-line { position: absolute; top: 0; right: 160px; width: 1px; height: 100%; background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent); opacity: 0.3; }
         .hero-tag { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; margin-bottom: 32px; opacity: 0.8; }
         .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(72px, 10vw, 140px); font-weight: 300; line-height: 0.92; letter-spacing: -0.02em; color: var(--white); margin-bottom: 8px; }
