@@ -1,5 +1,24 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (document.getElementById('razorpay-script')) return resolve(true);
+    const script = document.createElement('script');
+    script.id = 'razorpay-script';
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 export default function LandingPage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -14,555 +33,213 @@ export default function LandingPage() {
   }, []);
 
   const plans = [
-    { name: 'Free', price: 0, chars: '5,000', period: '/ forever', features: ['5,000 characters per month', 'Upload voice sample each time', 'WAV download included', 'Standard speed'], cta: 'Get Started', ctaHref: '/signup', style: 'outline' },
-    { name: 'Starter', price: 79, chars: '50,000', period: '/ month', features: ['50,000 characters per month', 'Upload voice sample each time', 'WAV download included', 'Standard speed'], cta: 'Get Starter', ctaHref: '/signup?plan=starter', style: 'outline' },
-    { name: 'Standard', price: 149, chars: '100,000', period: '/ month', features: ['100,000 characters per month', 'Save up to 5 voice profiles', 'WAV download included', 'Priority speed'], cta: 'Get Standard', ctaHref: '/signup?plan=standard', style: 'solid', badge: 'POPULAR' },
-    { name: 'Creator', price: 349, chars: '300,000', period: '/ month', features: ['300,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access'], cta: 'Get Creator', ctaHref: '/signup?plan=creator', style: 'outline' },
-    { name: 'Pro', price: 699, chars: '700,000', period: '/ month', features: ['700,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access'], cta: 'Get Pro', ctaHref: '/signup?plan=pro', style: 'outline' },
-    { name: 'Studio', price: 1299, chars: '1,500,000', period: '/ month', features: ['1,500,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access', 'Dedicated support'], cta: 'Get Studio', ctaHref: '/signup?plan=studio', style: 'outline' },
+    { name: 'Free', price: 0, chars: '5,000', period: '/ forever', features: ['5,000 characters per month', 'Upload voice sample each time', 'WAV download included', 'Standard speed'], cta: 'Get Started', ctaHref: '/signup', planKey: null, style: 'outline' },
+    { name: 'Starter', price: 79, chars: '50,000', period: '/ month', features: ['50,000 characters per month', 'Upload voice sample each time', 'WAV download included', 'Standard speed'], cta: 'Get Starter', ctaHref: null, planKey: 'starter', style: 'outline' },
+    { name: 'Standard', price: 149, chars: '100,000', period: '/ month', features: ['100,000 characters per month', 'Save up to 5 voice profiles', 'WAV download included', 'Priority speed'], cta: 'Get Standard', ctaHref: null, planKey: 'standard', style: 'solid', badge: 'POPULAR' },
+    { name: 'Creator', price: 349, chars: '300,000', period: '/ month', features: ['300,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access'], cta: 'Get Creator', ctaHref: null, planKey: 'creator', style: 'outline' },
+    { name: 'Pro', price: 699, chars: '700,000', period: '/ month', features: ['700,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access'], cta: 'Get Pro', ctaHref: null, planKey: 'pro', style: 'outline' },
+    { name: 'Studio', price: 1299, chars: '1,500,000', period: '/ month', features: ['1,500,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access', 'Dedicated support'], cta: 'Get Studio', ctaHref: null, planKey: 'studio', style: 'outline' },
   ];
 
   const topups = [
-    { chars: '50k chars', price: 79 },
-    { chars: '200k chars', price: 249 },
-    { chars: '1M chars', price: 799 },
+    { chars: '50k chars', price: 79, topupKey: '50k' },
+    { chars: '200k chars', price: 249, topupKey: '200k' },
+    { chars: '1M chars', price: 799, topupKey: '1m' },
   ];
+
+  const handlePlanClick = async (planKey: string | null, ctaHref: string | null) => {
+    if (!planKey) {
+      window.location.href = ctaHref!;
+      return;
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      window.location.href = `/signup?plan=${planKey}`;
+      return;
+    }
+    await loadRazorpayScript();
+    const res = await fetch('/api/razorpay/create-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: planKey }),
+    });
+    const { subscription_id, key } = await res.json();
+    const options = {
+      key,
+      subscription_id,
+      name: 'Soviron',
+      description: `${planKey.charAt(0).toUpperCase() + planKey.slice(1)} Plan`,
+      handler: async (response: any) => {
+        const verifyRes = await fetch('/api/razorpay/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_subscription_id: response.razorpay_subscription_id,
+            razorpay_signature: response.razorpay_signature,
+            plan: planKey,
+          }),
+        });
+        const result = await verifyRes.json();
+        if (result.success) window.location.href = '/dashboard';
+        else alert('Payment verification failed. Contact support.');
+      },
+      prefill: { email: user.email },
+      theme: { color: '#C9A84C' },
+    };
+    new window.Razorpay(options).open();
+  };
+
+  const handleTopupClick = async (topupKey: string, price: number) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      window.location.href = '/login';
+      return;
+    }
+    await loadRazorpayScript();
+    const res = await fetch('/api/razorpay/create-topup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topup: topupKey }),
+    });
+    const { order_id, amount, key } = await res.json();
+    const options = {
+      key,
+      amount,
+      currency: 'INR',
+      order_id,
+      name: 'Soviron',
+      description: `Top-up ${topupKey} characters`,
+      handler: async (response: any) => {
+        const verifyRes = await fetch('/api/razorpay/verify-topup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            topup: topupKey,
+          }),
+        });
+        const result = await verifyRes.json();
+        if (result.success) {
+          alert('Credits added successfully!');
+          window.location.href = '/dashboard';
+        } else {
+          alert('Payment verification failed. Contact support.');
+        }
+      },
+      prefill: { email: user.email },
+      theme: { color: '#C9A84C' },
+    };
+    new window.Razorpay(options).open();
+  };
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Tenor+Sans&family=Space+Mono:wght@400;700&display=swap');
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         :root {
-          --black: #080808;
-          --gold: #C9A84C;
-          --gold-light: #E8C97A;
-          --gold-dim: #7A6330;
-          --purple: #6B3FA0;
-          --white: #F5F0E8;
-          --grey: #2A2A2A;
+          --black: #080808; --gold: #C9A84C; --gold-light: #E8C97A;
+          --gold-dim: #7A6330; --purple: #6B3FA0; --white: #F5F0E8; --grey: #2A2A2A;
         }
-
-        body {
-          background: var(--black);
-          color: var(--white);
-          font-family: 'Tenor Sans', sans-serif;
-          overflow-x: hidden;
-          cursor: none;
-        }
-
-        .cursor {
-          position: fixed;
-          width: 8px; height: 8px;
-          background: var(--gold);
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 9999;
-          mix-blend-mode: difference;
-        }
-
-        .cursor-ring {
-          position: fixed;
-          width: 36px; height: 36px;
-          border: 1px solid var(--gold);
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 9998;
-          transition: all 0.15s ease;
-          opacity: 0.5;
-        }
-
-        nav {
-          position: fixed;
-          top: 0; left: 0; right: 0;
-          z-index: 100;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 28px 60px;
-          background: linear-gradient(to bottom, rgba(8,8,8,0.95), transparent);
-        }
-
-        .nav-logo {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 26px; font-weight: 300;
-          letter-spacing: 0.3em;
-          color: var(--gold);
-          text-transform: uppercase;
-        }
-
+        body { background: var(--black); color: var(--white); font-family: 'Tenor Sans', sans-serif; overflow-x: hidden; cursor: none; }
+        .cursor { position: fixed; width: 8px; height: 8px; background: var(--gold); border-radius: 50%; pointer-events: none; z-index: 9999; mix-blend-mode: difference; }
+        .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid var(--gold); border-radius: 50%; pointer-events: none; z-index: 9998; transition: all 0.15s ease; opacity: 0.5; }
+        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 28px 60px; background: linear-gradient(to bottom, rgba(8,8,8,0.95), transparent); }
+        .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; }
         .nav-links { display: flex; gap: 48px; list-style: none; }
-
-        .nav-links a {
-          font-family: 'Space Mono', monospace;
-          font-size: 11px; letter-spacing: 0.2em;
-          color: var(--white); text-decoration: none;
-          opacity: 0.6; text-transform: uppercase;
-          transition: opacity 0.3s, color 0.3s;
-        }
-
+        .nav-links a { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em; color: var(--white); text-decoration: none; opacity: 0.6; text-transform: uppercase; transition: opacity 0.3s, color 0.3s; }
         .nav-links a:hover { opacity: 1; color: var(--gold); }
-
-        .nav-cta {
-          font-family: 'Space Mono', monospace;
-          font-size: 11px; letter-spacing: 0.15em;
-          text-transform: uppercase;
-          padding: 12px 28px;
-          border: 1px solid var(--gold-dim);
-          color: var(--gold); background: transparent;
-          cursor: none; transition: all 0.3s;
-          text-decoration: none;
-        }
-
+        .nav-cta { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; padding: 12px 28px; border: 1px solid var(--gold-dim); color: var(--gold); background: transparent; cursor: none; transition: all 0.3s; text-decoration: none; }
         .nav-cta:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
-
-        .hero {
-          min-height: 100vh;
-          display: flex; flex-direction: column;
-          justify-content: center; align-items: flex-start;
-          padding: 0 60px;
-          position: relative; overflow: hidden;
-        }
-
-        .hero-bg {
-          position: absolute; inset: 0;
-          background:
-            radial-gradient(ellipse 60% 60% at 70% 50%, rgba(107,63,160,0.12) 0%, transparent 70%),
-            radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,168,76,0.06) 0%, transparent 60%);
-        }
-
-        .hero-line {
-          position: absolute; top: 0; right: 160px;
-          width: 1px; height: 100%;
-          background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent);
-          opacity: 0.3;
-        }
-
-        .hero-tag {
-          font-family: 'Space Mono', monospace;
-          font-size: 10px; letter-spacing: 0.4em;
-          color: var(--gold); text-transform: uppercase;
-          margin-bottom: 32px; opacity: 0.8;
-        }
-
-        .hero-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(72px, 10vw, 140px);
-          font-weight: 300; line-height: 0.92;
-          letter-spacing: -0.02em; color: var(--white);
-          margin-bottom: 8px;
-        }
-
+        .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 0 60px; position: relative; overflow: hidden; }
+        .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 60% at 70% 50%, rgba(107,63,160,0.12) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,168,76,0.06) 0%, transparent 60%); }
+        .hero-line { position: absolute; top: 0; right: 160px; width: 1px; height: 100%; background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent); opacity: 0.3; }
+        .hero-tag { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; margin-bottom: 32px; opacity: 0.8; }
+        .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(72px, 10vw, 140px); font-weight: 300; line-height: 0.92; letter-spacing: -0.02em; color: var(--white); margin-bottom: 8px; }
         .hero-title em { font-style: italic; color: var(--gold); }
         .hero-title .outline { -webkit-text-stroke: 1px rgba(245,240,232,0.3); color: transparent; }
-
-        .hero-sub {
-          font-size: 16px;
-          color: rgba(245,240,232,0.45);
-          max-width: 420px; line-height: 1.7;
-          margin-top: 40px; margin-bottom: 56px;
-          letter-spacing: 0.03em;
-        }
-
+        .hero-sub { font-size: 16px; color: rgba(245,240,232,0.45); max-width: 420px; line-height: 1.7; margin-top: 40px; margin-bottom: 56px; letter-spacing: 0.03em; }
         .hero-actions { display: flex; gap: 20px; align-items: center; }
-
-        .btn-primary {
-          font-family: 'Space Mono', monospace;
-          font-size: 11px; letter-spacing: 0.2em;
-          text-transform: uppercase;
-          padding: 18px 48px;
-          background: var(--gold); color: var(--black);
-          border: none; cursor: none;
-          text-decoration: none; transition: all 0.3s;
-          display: inline-block;
-        }
-
+        .btn-primary { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; padding: 18px 48px; background: var(--gold); color: var(--black); border: none; cursor: none; text-decoration: none; transition: all 0.3s; display: inline-block; }
         .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
-
-        .btn-ghost {
-          font-family: 'Space Mono', monospace;
-          font-size: 11px; letter-spacing: 0.2em;
-          text-transform: uppercase;
-          padding: 18px 48px;
-          background: transparent; color: var(--white);
-          border: 1px solid rgba(245,240,232,0.2);
-          cursor: none; text-decoration: none;
-          transition: all 0.3s; display: inline-block;
-        }
-
+        .btn-ghost { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; padding: 18px 48px; background: transparent; color: var(--white); border: 1px solid rgba(245,240,232,0.2); cursor: none; text-decoration: none; transition: all 0.3s; display: inline-block; }
         .btn-ghost:hover { border-color: var(--gold-dim); color: var(--gold); }
-
-        .hero-scroll {
-          position: absolute; bottom: 48px; left: 60px;
-          display: flex; align-items: center; gap: 16px;
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.3em;
-          text-transform: uppercase;
-          color: rgba(245,240,232,0.3);
-        }
-
-        .scroll-line {
-          width: 48px; height: 1px;
-          background: var(--gold-dim);
-          animation: scrollPulse 2s infinite;
-        }
-
-        @keyframes scrollPulse {
-          0%, 100% { opacity: 0.3; width: 48px; }
-          50% { opacity: 1; width: 72px; }
-        }
-
-        .section-divider {
-          height: 1px;
-          margin: 0 60px;
-          background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
-          opacity: 0.3;
-        }
-
-        .demo-section {
-          padding: 140px 60px;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 80px; align-items: center;
-        }
-
-        .demo-label {
-          font-family: 'Space Mono', monospace;
-          font-size: 10px; letter-spacing: 0.4em;
-          color: var(--gold); text-transform: uppercase;
-          margin-bottom: 24px;
-        }
-
-        .demo-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(40px, 5vw, 64px);
-          font-weight: 300; line-height: 1.1;
-          margin-bottom: 24px;
-        }
-
+        .hero-scroll { position: absolute; bottom: 48px; left: 60px; display: flex; align-items: center; gap: 16px; font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(245,240,232,0.3); }
+        .scroll-line { width: 48px; height: 1px; background: var(--gold-dim); animation: scrollPulse 2s infinite; }
+        @keyframes scrollPulse { 0%, 100% { opacity: 0.3; width: 48px; } 50% { opacity: 1; width: 72px; } }
+        .section-divider { height: 1px; margin: 0 60px; background: linear-gradient(to right, transparent, var(--gold-dim), transparent); opacity: 0.3; }
+        .demo-section { padding: 140px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+        .demo-label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; margin-bottom: 24px; }
+        .demo-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px, 5vw, 64px); font-weight: 300; line-height: 1.1; margin-bottom: 24px; }
         .demo-title em { font-style: italic; color: var(--gold); }
-
-        .demo-desc {
-          font-size: 15px;
-          color: rgba(245,240,232,0.5);
-          line-height: 1.8; letter-spacing: 0.02em;
-        }
-
-        .demo-card {
-          background: rgba(255,255,255,0.02);
-          border: 1px solid rgba(201,168,76,0.15);
-          padding: 48px; position: relative;
-        }
-
-        .demo-card::before {
-          content: '';
-          position: absolute; top: -1px; left: 40px;
-          width: 60px; height: 2px;
-          background: var(--gold);
-        }
-
-        .demo-textarea {
-          width: 100%;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(201,168,76,0.1);
-          padding: 20px; color: var(--white);
-          font-family: 'Tenor Sans', sans-serif;
-          font-size: 14px; line-height: 1.7;
-          resize: none; height: 120px;
-          outline: none; transition: border-color 0.3s;
-          letter-spacing: 0.02em;
-        }
-
+        .demo-desc { font-size: 15px; color: rgba(245,240,232,0.5); line-height: 1.8; letter-spacing: 0.02em; }
+        .demo-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(201,168,76,0.15); padding: 48px; position: relative; }
+        .demo-card::before { content: ''; position: absolute; top: -1px; left: 40px; width: 60px; height: 2px; background: var(--gold); }
+        .demo-textarea { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(201,168,76,0.1); padding: 20px; color: var(--white); font-family: 'Tenor Sans', sans-serif; font-size: 14px; line-height: 1.7; resize: none; height: 120px; outline: none; transition: border-color 0.3s; letter-spacing: 0.02em; }
         .demo-textarea:focus { border-color: rgba(201,168,76,0.4); }
         .demo-textarea::placeholder { color: rgba(245,240,232,0.2); }
-
-        .demo-btn {
-          width: 100%; margin-top: 16px; padding: 16px;
-          background: var(--gold); color: var(--black);
-          border: none;
-          font-family: 'Space Mono', monospace;
-          font-size: 11px; letter-spacing: 0.2em;
-          text-transform: uppercase;
-          cursor: pointer; transition: all 0.3s;
-        }
-
+        .demo-btn { width: 100%; margin-top: 16px; padding: 16px; background: var(--gold); color: var(--black); border: none; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
         .demo-btn:hover { background: var(--gold-light); }
         .demo-btn:disabled { background: var(--grey); color: rgba(245,240,232,0.3); cursor: not-allowed; }
-
         .features { padding: 140px 60px; }
-
-        .section-label {
-          font-family: 'Space Mono', monospace;
-          font-size: 10px; letter-spacing: 0.4em;
-          color: var(--gold); text-transform: uppercase;
-          margin-bottom: 16px;
-        }
-
-        .section-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(40px, 5vw, 64px);
-          font-weight: 300; line-height: 1.1;
-        }
-
+        .section-label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; margin-bottom: 16px; }
+        .section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px, 5vw, 64px); font-weight: 300; line-height: 1.1; }
         .section-title em { font-style: italic; color: var(--gold); }
-
-        .features-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1px; margin-top: 80px;
-          background: rgba(201,168,76,0.1);
-        }
-
-        .feature-card {
-          background: var(--black);
-          padding: 48px 40px; position: relative;
-          transition: background 0.3s;
-        }
-
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 80px; background: rgba(201,168,76,0.1); }
+        .feature-card { background: var(--black); padding: 48px 40px; position: relative; transition: background 0.3s; }
         .feature-card:hover { background: rgba(107,63,160,0.06); }
-
-        .feature-num {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 72px; font-weight: 300;
-          color: rgba(201,168,76,0.08);
-          position: absolute; top: 24px; right: 32px;
-          line-height: 1;
-        }
-
+        .feature-num { font-family: 'Cormorant Garamond', serif; font-size: 72px; font-weight: 300; color: rgba(201,168,76,0.08); position: absolute; top: 24px; right: 32px; line-height: 1; }
         .feature-icon { font-size: 28px; margin-bottom: 24px; display: block; }
-
-        .feature-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 24px; font-weight: 400;
-          margin-bottom: 12px; color: var(--white);
-        }
-
-        .feature-desc {
-          font-size: 13px;
-          color: rgba(245,240,232,0.4);
-          line-height: 1.8; letter-spacing: 0.02em;
-        }
-
-        /* PRICING */
+        .feature-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; margin-bottom: 12px; color: var(--white); }
+        .feature-desc { font-size: 13px; color: rgba(245,240,232,0.4); line-height: 1.8; letter-spacing: 0.02em; }
         .pricing { padding: 140px 60px; }
-
         .pricing-header { text-align: center; margin-bottom: 80px; }
-
-        .plans-grid {
-          display: grid;
-          grid-template-columns: repeat(6, 1fr);
-          gap: 1px;
-          background: rgba(201,168,76,0.1);
-          margin-bottom: 2px;
-        }
-
-        .plan-card {
-          background: var(--black);
-          padding: 40px 28px;
-          position: relative;
-          transition: background 0.3s;
-        }
-
+        .plans-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: rgba(201,168,76,0.1); margin-bottom: 2px; }
+        .plan-card { background: var(--black); padding: 40px 28px; position: relative; transition: background 0.3s; }
         .plan-card:hover { background: rgba(107,63,160,0.06); }
         .plan-card.featured { background: rgba(107,63,160,0.1); }
-
-        .plan-badge {
-          position: absolute; top: 16px; left: 50%;
-          transform: translateX(-50%);
-          font-family: 'Space Mono', monospace;
-          font-size: 8px; letter-spacing: 0.25em;
-          color: var(--gold);
-          border: 1px solid var(--gold-dim);
-          padding: 3px 8px;
-          white-space: nowrap;
-        }
-
-        .plan-name {
-          font-family: 'Space Mono', monospace;
-          font-size: 10px; letter-spacing: 0.25em;
-          text-transform: uppercase;
-          color: rgba(245,240,232,0.4);
-          margin-bottom: 20px;
-          margin-top: 8px;
-        }
-
+        .plan-badge { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.25em; color: var(--gold); border: 1px solid var(--gold-dim); padding: 3px 8px; white-space: nowrap; }
+        .plan-name { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(245,240,232,0.4); margin-bottom: 20px; margin-top: 8px; }
         .plan-card.featured .plan-name { margin-top: 28px; }
-
-        .plan-price {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 52px; font-weight: 300;
-          line-height: 1; color: var(--white);
-          margin-bottom: 2px;
-        }
-
+        .plan-price { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 300; line-height: 1; color: var(--white); margin-bottom: 2px; }
         .plan-price .rupee { color: var(--gold); font-size: 24px; vertical-align: super; }
         .plan-price .free-text { font-size: 36px; }
-
-        .plan-period {
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.15em;
-          color: rgba(245,240,232,0.25);
-          margin-bottom: 16px;
-        }
-
-        .plan-chars {
-          font-family: 'Space Mono', monospace;
-          font-size: 10px; letter-spacing: 0.1em;
-          color: var(--gold-dim);
-          margin-bottom: 24px;
-          padding-bottom: 24px;
-          border-bottom: 1px solid rgba(201,168,76,0.1);
-        }
-
+        .plan-period { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: rgba(245,240,232,0.25); margin-bottom: 16px; }
+        .plan-chars { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: var(--gold-dim); margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(201,168,76,0.1); }
         .plan-features-list { list-style: none; margin-bottom: 32px; }
-
-        .plan-features-list li {
-          font-size: 11px;
-          color: rgba(245,240,232,0.45);
-          padding: 7px 0;
-          border-bottom: 1px solid rgba(255,255,255,0.03);
-          letter-spacing: 0.01em;
-          display: flex; gap: 8px;
-          line-height: 1.4;
-        }
-
+        .plan-features-list li { font-size: 11px; color: rgba(245,240,232,0.45); padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.03); letter-spacing: 0.01em; display: flex; gap: 8px; line-height: 1.4; }
         .plan-features-list li::before { content: '—'; color: var(--gold-dim); flex-shrink: 0; }
-
-        .plan-btn {
-          width: 100%; padding: 12px 8px;
-          font-family: 'Space Mono', monospace;
-          font-size: 10px; letter-spacing: 0.15em;
-          text-transform: uppercase;
-          cursor: pointer; transition: all 0.3s;
-          text-decoration: none;
-          display: block; text-align: center;
-        }
-
-        .plan-btn.outline {
-          background: transparent; color: var(--white);
-          border: 1px solid rgba(245,240,232,0.15);
-        }
-
+        .plan-btn { width: 100%; padding: 12px 8px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; text-decoration: none; display: block; text-align: center; }
+        .plan-btn.outline { background: transparent; color: var(--white); border: 1px solid rgba(245,240,232,0.15); }
         .plan-btn.outline:hover { border-color: var(--gold-dim); color: var(--gold); }
         .plan-btn.solid { background: var(--gold); color: var(--black); border: none; }
         .plan-btn.solid:hover { background: var(--gold-light); }
-
-        /* TOPUP */
-        .topup-section {
-          margin-top: 60px;
-          padding: 48px;
-          background: rgba(255,255,255,0.02);
-          border: 1px solid rgba(201,168,76,0.12);
-          position: relative;
-        }
-
-        .topup-section::before {
-          content: '';
-          position: absolute; top: -1px; left: 40px;
-          width: 80px; height: 2px;
-          background: var(--gold);
-        }
-
-        .topup-header {
-          display: flex; justify-content: space-between;
-          align-items: flex-start; margin-bottom: 32px;
-        }
-
-        .topup-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 32px; font-weight: 300;
-        }
-
+        .topup-section { margin-top: 60px; padding: 48px; background: rgba(255,255,255,0.02); border: 1px solid rgba(201,168,76,0.12); position: relative; }
+        .topup-section::before { content: ''; position: absolute; top: -1px; left: 40px; width: 80px; height: 2px; background: var(--gold); }
+        .topup-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+        .topup-title { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 300; }
         .topup-title em { font-style: italic; color: var(--gold); }
-
-        .topup-desc {
-          font-size: 13px;
-          color: rgba(245,240,232,0.4);
-          max-width: 320px; line-height: 1.7;
-          letter-spacing: 0.02em;
-        }
-
-        .topup-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1px;
-          background: rgba(201,168,76,0.1);
-        }
-
-        .topup-card {
-          background: var(--black);
-          padding: 32px 28px;
-          display: flex; justify-content: space-between;
-          align-items: center;
-          transition: background 0.3s;
-          cursor: pointer;
-        }
-
+        .topup-desc { font-size: 13px; color: rgba(245,240,232,0.4); max-width: 320px; line-height: 1.7; letter-spacing: 0.02em; }
+        .topup-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(201,168,76,0.1); }
+        .topup-card { background: var(--black); padding: 32px 28px; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; cursor: pointer; }
         .topup-card:hover { background: rgba(107,63,160,0.06); }
-
-        .topup-chars {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 28px; font-weight: 300;
-          color: var(--white);
-        }
-
-        .topup-price {
-          font-family: 'Space Mono', monospace;
-          font-size: 18px; color: var(--gold);
-        }
-
-        .topup-btn {
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.2em;
-          text-transform: uppercase;
-          padding: 8px 16px;
-          background: transparent;
-          border: 1px solid rgba(201,168,76,0.25);
-          color: var(--gold-dim);
-          cursor: pointer; transition: all 0.3s;
-          margin-top: 8px;
-        }
-
+        .topup-chars { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: var(--white); }
+        .topup-price { font-family: 'Space Mono', monospace; font-size: 18px; color: var(--gold); }
+        .topup-btn { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; padding: 8px 16px; background: transparent; border: 1px solid rgba(201,168,76,0.25); color: var(--gold-dim); cursor: pointer; transition: all 0.3s; margin-top: 8px; }
         .topup-card:hover .topup-btn { border-color: var(--gold); color: var(--gold); }
-
-        footer {
-          padding: 60px;
-          border-top: 1px solid rgba(201,168,76,0.1);
-          display: flex; justify-content: space-between;
-          align-items: center; margin-top: 140px;
-        }
-
-        .footer-logo {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 20px; font-weight: 300;
-          letter-spacing: 0.3em; color: var(--gold);
-          text-transform: uppercase;
-        }
-
-        .footer-copy {
-          font-family: 'Space Mono', monospace;
-          font-size: 10px; letter-spacing: 0.15em;
-          color: rgba(245,240,232,0.2);
-        }
-
-        @media (max-width: 1024px) {
-          .plans-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-
+        footer { padding: 60px; border-top: 1px solid rgba(201,168,76,0.1); display: flex; justify-content: space-between; align-items: center; margin-top: 140px; }
+        .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; }
+        .footer-copy { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: rgba(245,240,232,0.2); }
+        @media (max-width: 1024px) { .plans-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 768px) {
-          nav { padding: 20px 24px; }
-          .nav-links { display: none; }
-          .hero { padding: 0 24px; }
-          .section-divider { margin: 0 24px; }
-          .demo-section { grid-template-columns: 1fr; padding: 80px 24px; }
-          .features { padding: 80px 24px; }
-          .features-grid { grid-template-columns: 1fr; }
-          .pricing { padding: 80px 24px; }
-          .plans-grid { grid-template-columns: 1fr 1fr; }
-          .topup-grid { grid-template-columns: 1fr; }
-          .topup-header { flex-direction: column; gap: 16px; }
+          nav { padding: 20px 24px; } .nav-links { display: none; } .hero { padding: 0 24px; }
+          .section-divider { margin: 0 24px; } .demo-section { grid-template-columns: 1fr; padding: 80px 24px; }
+          .features { padding: 80px 24px; } .features-grid { grid-template-columns: 1fr; }
+          .pricing { padding: 80px 24px; } .plans-grid { grid-template-columns: 1fr 1fr; }
+          .topup-grid { grid-template-columns: 1fr; } .topup-header { flex-direction: column; gap: 16px; }
           footer { padding: 40px 24px; flex-direction: column; gap: 16px; text-align: center; }
         }
       `}</style>
@@ -648,7 +325,6 @@ export default function LandingPage() {
           <p className="section-label">Pricing</p>
           <h2 className="section-title">Start free, <em>scale</em> when ready</h2>
         </div>
-
         <div className="plans-grid">
           {plans.map((plan) => (
             <div className={`plan-card ${plan.badge ? 'featured' : ''}`} key={plan.name}>
@@ -665,11 +341,12 @@ export default function LandingPage() {
               <ul className="plan-features-list">
                 {plan.features.map((f, i) => <li key={i}>{f}</li>)}
               </ul>
-              <a href={plan.ctaHref} className={`plan-btn ${plan.style}`}>{plan.cta}</a>
+              <button className={`plan-btn ${plan.style}`} onClick={() => handlePlanClick(plan.planKey, plan.ctaHref)}>
+                {plan.cta}
+              </button>
             </div>
           ))}
         </div>
-
         <div className="topup-section">
           <div className="topup-header">
             <div>
@@ -680,7 +357,7 @@ export default function LandingPage() {
           </div>
           <div className="topup-grid">
             {topups.map((t) => (
-              <div className="topup-card" key={t.chars}>
+              <div className="topup-card" key={t.chars} onClick={() => handleTopupClick(t.topupKey, t.price)}>
                 <div>
                   <div className="topup-chars">{t.chars}</div>
                   <button className="topup-btn">Add Credits</button>
