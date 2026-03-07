@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
 
   if (code) {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -28,8 +28,3 @@ export async function GET(request: Request) {
 
   return NextResponse.redirect(`${origin}/login`)
 }
-```
-
-Then in Supabase → **Authentication** → **URL Configuration** → **Redirect URLs**, add:
-```
-http://localhost:3000/auth/callback
