@@ -79,12 +79,20 @@ export default function Dashboard() {
       formData.append('text', text);
       // Use saved voice if selected (paid), else session upload
       if (selectedVoice && isPaid) {
-        // fetch voice from GCS and append — for now append nothing (VM uses default)
-        // TODO: fetch signed URL and append blob
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+          .from('voices')
+          .createSignedUrl(selectedVoice.file_path, 60);
+        if (signedUrlError) throw new Error('Could not fetch saved voice');
+        const voiceRes = await fetch(signedUrlData.signedUrl);
+        const voiceBlob = await voiceRes.blob();
+        const voiceFile = new File([voiceBlob], 'voice.wav', { type: 'audio/wav' });
+        formData.append('audio_prompt', voiceFile);
       } else if (sessionVoiceFile) {
         formData.append('audio_prompt', sessionVoiceFile);
       }
-      const res = await fetch('http://35.206.231.152:8000/generate', { method: 'POST', body: formData });
+      formData.append('speed', speed.toString());
+      formData.append('pitch', pitch.toString());
+      const res = await fetch(`${process.env.NEXT_PUBLIC_VM_URL}/generate`, { method: 'POST', body: formData });
       if (!res.ok) throw new Error('failed');
       const blob = await res.blob();
       setAudioUrl(URL.createObjectURL(blob));
