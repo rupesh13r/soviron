@@ -21,20 +21,10 @@ function loadRazorpayScript(): Promise<boolean> {
 }
 
 export default function LandingPage() {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const heroRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -86,37 +76,22 @@ export default function LandingPage() {
   ];
 
   const handlePlanClick = async (planKey: string | null, ctaHref: string | null) => {
-    if (!planKey) {
-      window.location.href = ctaHref!;
-      return;
-    }
+    if (!planKey) { window.location.href = ctaHref!; return; }
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      window.location.href = `/signup?plan=${planKey}`;
-      return;
-    }
+    if (!user) { window.location.href = `/signup?plan=${planKey}`; return; }
     await loadRazorpayScript();
     const res = await fetch('/api/razorpay/create-subscription', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan: planKey }),
     });
     const { subscription_id, key } = await res.json();
     const options = {
-      key,
-      subscription_id,
-      name: 'Soviron',
+      key, subscription_id, name: 'Soviron',
       description: `${planKey.charAt(0).toUpperCase() + planKey.slice(1)} Plan`,
       handler: async (response: any) => {
         const verifyRes = await fetch('/api/razorpay/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_subscription_id: response.razorpay_subscription_id,
-            razorpay_signature: response.razorpay_signature,
-            plan: planKey,
-          }),
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...response, plan: planKey }),
         });
         const result = await verifyRes.json();
         if (result.success) window.location.href = '/dashboard';
@@ -130,42 +105,24 @@ export default function LandingPage() {
 
   const handleTopupClick = async (topupKey: string, price: number) => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      window.location.href = '/login';
-      return;
-    }
+    if (!user) { window.location.href = '/login'; return; }
     await loadRazorpayScript();
     const res = await fetch('/api/razorpay/create-topup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ topup: topupKey }),
     });
     const { order_id, amount, key } = await res.json();
     const options = {
-      key,
-      amount,
-      currency: 'INR',
-      order_id,
-      name: 'Soviron',
+      key, amount, currency: 'INR', order_id, name: 'Soviron',
       description: `Top-up ${topupKey} characters`,
       handler: async (response: any) => {
         const verifyRes = await fetch('/api/razorpay/verify-topup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_signature: response.razorpay_signature,
-            topup: topupKey,
-          }),
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...response, topup: topupKey }),
         });
         const result = await verifyRes.json();
-        if (result.success) {
-          alert('Credits added successfully!');
-          window.location.href = '/dashboard';
-        } else {
-          alert('Payment verification failed. Contact support.');
-        }
+        if (result.success) { alert('Credits added successfully!'); window.location.href = '/dashboard'; }
+        else alert('Payment verification failed. Contact support.');
       },
       prefill: { email: user.email },
       theme: { color: '#C9A84C' },
@@ -182,18 +139,15 @@ export default function LandingPage() {
           --black: #080808; --gold: #C9A84C; --gold-light: #E8C97A;
           --gold-dim: #7A6330; --purple: #6B3FA0; --white: #F5F0E8; --grey: #2A2A2A;
         }
-        body { background: var(--black); color: var(--white); font-family: 'Tenor Sans', sans-serif; overflow-x: hidden; cursor: none; }
-        .cursor { position: fixed; width: 8px; height: 8px; background: var(--gold); border-radius: 50%; pointer-events: none; z-index: 9999; mix-blend-mode: difference; }
-        .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid var(--gold); border-radius: 50%; pointer-events: none; z-index: 9998; transition: all 0.15s ease; opacity: 0.5; }
+        body { background: var(--black); color: var(--white); font-family: 'Tenor Sans', sans-serif; overflow-x: hidden; }
         nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 28px 60px; background: linear-gradient(to bottom, rgba(8,8,8,0.95), transparent); }
         .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; }
         .nav-links { display: flex; gap: 48px; list-style: none; }
         .nav-links a { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em; color: var(--white); text-decoration: none; opacity: 0.6; text-transform: uppercase; transition: opacity 0.3s, color 0.3s; }
         .nav-links a:hover { opacity: 1; color: var(--gold); }
-        .nav-cta { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; padding: 12px 28px; border: 1px solid var(--gold-dim); color: var(--gold); background: transparent; cursor: none; transition: all 0.3s; text-decoration: none; }
+        .nav-cta { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; padding: 12px 28px; border: 1px solid var(--gold-dim); color: var(--gold); background: transparent; cursor: pointer; transition: all 0.3s; text-decoration: none; }
         .nav-cta:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
 
-        /* AVATAR + DROPDOWN */
         .nav-avatar-wrap { position: relative; }
         .nav-avatar { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--gold-dim); background: rgba(201,168,76,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; transition: border-color 0.3s, box-shadow 0.3s; flex-shrink: 0; }
         .nav-avatar:hover { border-color: var(--gold); box-shadow: 0 0 16px rgba(201,168,76,0.2); }
@@ -232,9 +186,9 @@ export default function LandingPage() {
         .hero-title .outline { -webkit-text-stroke: 1px rgba(245,240,232,0.3); color: transparent; }
         .hero-sub { font-size: 16px; color: rgba(245,240,232,0.45); max-width: 420px; line-height: 1.7; margin-top: 40px; margin-bottom: 56px; letter-spacing: 0.03em; }
         .hero-actions { display: flex; gap: 20px; align-items: center; }
-        .btn-primary { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; padding: 18px 48px; background: var(--gold); color: var(--black); border: none; cursor: none; text-decoration: none; transition: all 0.3s; display: inline-block; }
+        .btn-primary { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; padding: 18px 48px; background: var(--gold); color: var(--black); border: none; cursor: pointer; text-decoration: none; transition: all 0.3s; display: inline-block; }
         .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
-        .btn-ghost { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; padding: 18px 48px; background: transparent; color: var(--white); border: 1px solid rgba(245,240,232,0.2); cursor: none; text-decoration: none; transition: all 0.3s; display: inline-block; }
+        .btn-ghost { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; padding: 18px 48px; background: transparent; color: var(--white); border: 1px solid rgba(245,240,232,0.2); cursor: pointer; text-decoration: none; transition: all 0.3s; display: inline-block; }
         .btn-ghost:hover { border-color: var(--gold-dim); color: var(--gold); }
         .hero-scroll { position: absolute; bottom: 48px; left: 60px; display: flex; align-items: center; gap: 16px; font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(245,240,232,0.3); }
         .scroll-line { width: 48px; height: 1px; background: var(--gold-dim); animation: scrollPulse 2s infinite; }
@@ -314,9 +268,6 @@ export default function LandingPage() {
         }
       `}</style>
 
-      <div className="cursor" style={{ left: mousePos.x - 4, top: mousePos.y - 4 }} />
-      <div className="cursor-ring" style={{ left: mousePos.x - 18, top: mousePos.y - 18 }} />
-
       <nav>
         <div className="nav-logo">Soviron</div>
         <ul className="nav-links">
@@ -333,7 +284,6 @@ export default function LandingPage() {
                 : <span className="nav-avatar-initials">{getInitials(user.email)}</span>
               }
             </div>
-
             {dropdownOpen && (
               <div className="avatar-dropdown">
                 <div className="dd-header">
@@ -348,7 +298,6 @@ export default function LandingPage() {
                     <span className="dd-plan-badge">{profile?.plan || 'free'} plan</span>
                   </div>
                 </div>
-
                 <div className="dd-quota">
                   <div className="dd-quota-top">
                     <span className="dd-quota-label">Chars remaining</span>
@@ -359,23 +308,13 @@ export default function LandingPage() {
                     <div className="dd-bar-fill" style={{ width: `${100 - charsPercent}%` }} />
                   </div>
                 </div>
-
                 <div className="dd-links">
-                  <a href="/dashboard" className="dd-link">
-                    <span className="dd-link-icon">🎙</span> Dashboard
-                  </a>
-                  <a href="/dashboard/voices" className="dd-link">
-                    <span className="dd-link-icon">🔊</span> My Voices
-                  </a>
-                  <a href="#pricing" className="dd-link" onClick={() => setDropdownOpen(false)}>
-                    <span className="dd-link-icon">⭐</span> Upgrade Plan
-                  </a>
+                  <a href="/dashboard" className="dd-link"><span className="dd-link-icon">🎙</span> Dashboard</a>
+                  <a href="/dashboard/voices" className="dd-link"><span className="dd-link-icon">🔊</span> My Voices</a>
+                  <a href="#pricing" className="dd-link" onClick={() => setDropdownOpen(false)}><span className="dd-link-icon">⭐</span> Upgrade Plan</a>
                 </div>
-
                 <div className="dd-footer">
-                  <button className="dd-signout" onClick={handleLogout}>
-                    <span className="dd-link-icon">↩</span> Sign Out
-                  </button>
+                  <button className="dd-signout" onClick={handleLogout}><span className="dd-link-icon">↩</span> Sign Out</button>
                 </div>
               </div>
             )}
@@ -385,7 +324,7 @@ export default function LandingPage() {
         )}
       </nav>
 
-      <section className="hero" ref={heroRef}>
+      <section className="hero">
         <div className="hero-bg" />
         <div className="hero-line" />
         <p className="hero-tag">AI Voice Cloning — Powered by Chatterbox</p>
