@@ -22,7 +22,11 @@ function loadRazorpayScript(): Promise<boolean> {
 
 export default function LandingPage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -31,6 +35,40 @@ export default function LandingPage() {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        setProfile(data);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    setDropdownOpen(false);
+  };
+
+  const getInitials = (email: string) => email?.slice(0, 2).toUpperCase() || '??';
+  const getAvatarUrl = () => user?.user_metadata?.avatar_url || null;
+  const charsUsed = profile?.chars_used || 0;
+  const charsLimit = profile?.chars_limit || 5000;
+  const charsRemaining = Math.max(charsLimit - charsUsed, 0);
+  const charsPercent = Math.min((charsUsed / charsLimit) * 100, 100);
 
   const plans = [
     { name: 'Free', price: 0, chars: '5,000', period: '/ forever', features: ['5,000 characters per month', 'Upload voice sample each time', 'WAV download included', 'Standard speed'], cta: 'Get Started', ctaHref: '/signup', planKey: null, style: 'outline' },
@@ -154,6 +192,37 @@ export default function LandingPage() {
         .nav-links a:hover { opacity: 1; color: var(--gold); }
         .nav-cta { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; padding: 12px 28px; border: 1px solid var(--gold-dim); color: var(--gold); background: transparent; cursor: none; transition: all 0.3s; text-decoration: none; }
         .nav-cta:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
+
+        /* AVATAR + DROPDOWN */
+        .nav-avatar-wrap { position: relative; }
+        .nav-avatar { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--gold-dim); background: rgba(201,168,76,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; transition: border-color 0.3s, box-shadow 0.3s; flex-shrink: 0; }
+        .nav-avatar:hover { border-color: var(--gold); box-shadow: 0 0 16px rgba(201,168,76,0.2); }
+        .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .nav-avatar-initials { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--gold); letter-spacing: 0.05em; font-weight: 700; }
+        .avatar-dropdown { position: absolute; top: 56px; right: 0; width: 290px; background: #0D0D0D; border: 1px solid rgba(201,168,76,0.12); z-index: 200; animation: dropIn 0.18s ease; }
+        @keyframes dropIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .dd-header { padding: 20px 24px 16px; border-bottom: 1px solid rgba(201,168,76,0.07); display: flex; align-items: center; gap: 14px; }
+        .dd-avatar-sm { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--gold-dim); background: rgba(201,168,76,0.08); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+        .dd-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
+        .dd-avatar-sm span { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--gold); font-weight: 700; }
+        .dd-user-info { min-width: 0; }
+        .dd-email { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.05em; color: rgba(245,240,232,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+        .dd-plan-badge { display: inline-block; font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold-dim); padding: 2px 7px; }
+        .dd-quota { padding: 16px 24px; border-bottom: 1px solid rgba(201,168,76,0.07); }
+        .dd-quota-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+        .dd-quota-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(245,240,232,0.25); }
+        .dd-quota-count { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; color: var(--white); }
+        .dd-quota-sub { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.1em; color: rgba(245,240,232,0.2); margin-bottom: 10px; }
+        .dd-bar-bg { height: 2px; background: rgba(255,255,255,0.05); border-radius: 1px; }
+        .dd-bar-fill { height: 2px; background: linear-gradient(to right, var(--gold-dim), var(--gold)); border-radius: 1px; transition: width 0.6s ease; }
+        .dd-links { padding: 6px 0; border-bottom: 1px solid rgba(201,168,76,0.07); }
+        .dd-link { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(245,240,232,0.4); text-decoration: none; cursor: pointer; transition: all 0.2s; background: none; border: none; width: 100%; text-align: left; }
+        .dd-link:hover { color: var(--white); background: rgba(255,255,255,0.02); }
+        .dd-link-icon { font-size: 14px; }
+        .dd-footer { padding: 6px 0; }
+        .dd-signout { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(245,240,232,0.3); cursor: pointer; transition: all 0.2s; background: none; border: none; width: 100%; text-align: left; }
+        .dd-signout:hover { color: #e05555; background: rgba(224,85,85,0.04); }
+
         .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 0 60px; position: relative; overflow: hidden; }
         .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 60% at 70% 50%, rgba(107,63,160,0.12) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,168,76,0.06) 0%, transparent 60%); }
         .hero-line { position: absolute; top: 0; right: 160px; width: 1px; height: 100%; background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent); opacity: 0.3; }
@@ -241,6 +310,7 @@ export default function LandingPage() {
           .pricing { padding: 80px 24px; } .plans-grid { grid-template-columns: 1fr 1fr; }
           .topup-grid { grid-template-columns: 1fr; } .topup-header { flex-direction: column; gap: 16px; }
           footer { padding: 40px 24px; flex-direction: column; gap: 16px; text-align: center; }
+          .avatar-dropdown { width: 260px; }
         }
       `}</style>
 
@@ -252,9 +322,67 @@ export default function LandingPage() {
         <ul className="nav-links">
           <li><a href="#features">Features</a></li>
           <li><a href="#pricing">Pricing</a></li>
-          <li><a href="/login">Login</a></li>
+          {!user && <li><a href="/login">Login</a></li>}
         </ul>
-        <a href="/signup" className="nav-cta">Start Free</a>
+
+        {user ? (
+          <div className="nav-avatar-wrap" ref={dropdownRef}>
+            <div className="nav-avatar" onClick={() => setDropdownOpen(!dropdownOpen)}>
+              {getAvatarUrl()
+                ? <img src={getAvatarUrl()} alt="avatar" />
+                : <span className="nav-avatar-initials">{getInitials(user.email)}</span>
+              }
+            </div>
+
+            {dropdownOpen && (
+              <div className="avatar-dropdown">
+                <div className="dd-header">
+                  <div className="dd-avatar-sm">
+                    {getAvatarUrl()
+                      ? <img src={getAvatarUrl()} alt="avatar" />
+                      : <span>{getInitials(user.email)}</span>
+                    }
+                  </div>
+                  <div className="dd-user-info">
+                    <p className="dd-email">{user.email}</p>
+                    <span className="dd-plan-badge">{profile?.plan || 'free'} plan</span>
+                  </div>
+                </div>
+
+                <div className="dd-quota">
+                  <div className="dd-quota-top">
+                    <span className="dd-quota-label">Chars remaining</span>
+                    <span className="dd-quota-count">{charsRemaining.toLocaleString()}</span>
+                  </div>
+                  <p className="dd-quota-sub">of {charsLimit.toLocaleString()} total this month</p>
+                  <div className="dd-bar-bg">
+                    <div className="dd-bar-fill" style={{ width: `${100 - charsPercent}%` }} />
+                  </div>
+                </div>
+
+                <div className="dd-links">
+                  <a href="/dashboard" className="dd-link">
+                    <span className="dd-link-icon">🎙</span> Dashboard
+                  </a>
+                  <a href="/dashboard/voices" className="dd-link">
+                    <span className="dd-link-icon">🔊</span> My Voices
+                  </a>
+                  <a href="#pricing" className="dd-link" onClick={() => setDropdownOpen(false)}>
+                    <span className="dd-link-icon">⭐</span> Upgrade Plan
+                  </a>
+                </div>
+
+                <div className="dd-footer">
+                  <button className="dd-signout" onClick={handleLogout}>
+                    <span className="dd-link-icon">↩</span> Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <a href="/signup" className="nav-cta">Start Free</a>
+        )}
       </nav>
 
       <section className="hero" ref={heroRef}>
@@ -270,7 +398,9 @@ export default function LandingPage() {
           Clone any voice with a short audio sample. Generate natural, expressive speech in seconds. Professional quality, at a fraction of the cost.
         </p>
         <div className="hero-actions">
-          <a href="/signup" className="btn-primary">Clone Your Voice</a>
+          <a href={user ? '/dashboard' : '/signup'} className="btn-primary">
+            {user ? 'Go to Dashboard' : 'Clone Your Voice'}
+          </a>
           <a href="#demo" className="btn-ghost">Hear a Demo</a>
         </div>
         <div className="hero-scroll">
