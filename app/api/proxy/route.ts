@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const maxDuration = 300; // 5 minutes — needed for cold starts
+
 const BACKENDS = [
   {
     name: 'Modal',
@@ -16,9 +18,7 @@ const BACKENDS = [
 ];
 
 export async function POST(req: NextRequest) {
-  // Forward the raw FormData to each backend in order
   const formData = await req.formData();
-
   let lastError = '';
 
   for (const backend of BACKENDS) {
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       console.log(`[proxy] Trying ${backend.name}...`);
 
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout
+      const timeout = setTimeout(() => controller.abort(), 240000); // 4 min timeout per backend
 
       const res = await fetch(backend.url, {
         method: 'POST',
@@ -58,7 +58,6 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // All backends failed
   return NextResponse.json(
     { error: 'All backends are currently unavailable. Please try again in a moment.', detail: lastError },
     { status: 503 }
@@ -66,12 +65,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  // Health check — ping all backends and return their status
   const results = await Promise.all(
     BACKENDS.map(async (backend) => {
       try {
         const healthUrl = backend.url.replace('/generate', '/health');
-        const res = await fetch(healthUrl, { signal: AbortSignal.timeout(5000) });
+        const res = await fetch(healthUrl, { signal: AbortSignal.timeout(10000) });
         return { name: backend.name, status: res.ok ? 'online' : 'error', code: res.status };
       } catch {
         return { name: backend.name, status: 'offline' };
