@@ -215,8 +215,9 @@ export default function Dashboard() {
             });
             if (res.ok) {
               const json = await res.json();
-              const audioBytes = Uint8Array.from(atob(json.audio_b64), c => c.charCodeAt(0));
-              const blob = new Blob([audioBytes], { type: json.media_type });
+              const result = json.result || json; // Cerebrium wraps in result field
+              const audioBytes = Uint8Array.from(atob(result.audio_b64), c => c.charCodeAt(0));
+              const blob = new Blob([audioBytes], { type: result.media_type });
               setAudioUrl(URL.createObjectURL(blob));
               await supabase.from('profiles').update({ chars_used: (profile?.chars_used || 0) + text.length }).eq('id', user.id);
               setProfile((prev: any) => ({ ...prev, chars_used: (prev?.chars_used || 0) + text.length }));
