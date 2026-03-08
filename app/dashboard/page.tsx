@@ -72,7 +72,7 @@ export default function Dashboard() {
       // Clear any leftover voice state from previous session
       setSelectedVoice(null);
       setSessionVoiceFile(null);
-      setSessionVoiceFileName(null);
+      setSessionVoiceFileName('');
       const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
       setProfile(data);
       const { data: voiceData } = await supabase.from('voices').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false });
