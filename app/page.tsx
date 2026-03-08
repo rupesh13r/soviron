@@ -452,25 +452,27 @@ function DemoWidget() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [status, setStatus] = useState('');
+  const BACKENDS = [
+    { name: 'Modal', url: 'https://rupeshrajbhar1508--soviron-tts-fastapi-app.modal.run' },
+    { name: 'Cerebrium', url: 'https://api.aws.us-east-1.cerebrium.ai/v4/p-c85ac149/soviron-tts' },
+    { name: 'GCP VM', url: 'http://35.206.231.152:8000' },
+  ];
   const handleGenerate = async () => {
     if (!text.trim()) return;
-    setLoading(true);
-    setError(null);
-    setAudioUrl(null);
-    try {
-      const res = await fetch('http://35.194.128.213:8000/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      });
-      if (!res.ok) throw new Error('Failed');
-      const blob = await res.blob();
-      setAudioUrl(URL.createObjectURL(blob));
-    } catch {
-      setError('VM may be offline. Start the GCP VM to enable generation.');
-    } finally {
-      setLoading(false);
+    setLoading(true); setError(null); setAudioUrl(null); setStatus('');
+    const formData = new FormData();
+    formData.append('text', text);
+    let success = false;
+    for (const backend of BACKENDS) {
+      try {
+        setStatus(backend.name === 'Modal' ? 'Warming up servers... this may take up to 60 seconds on first use.' : 'Trying backup server...');
+        const res = await fetch(`${backend.url}/generate`, { method: 'POST', body: formData });
+        if (res.ok) { const blob = await res.blob(); setAudioUrl(URL.createObjectURL(blob)); success = true; break; }
+      } catch { continue; }
     }
+    if (!success) setError('All servers are currently busy. Please try again in a moment.');
+    setStatus(''); setLoading(false);
   };
 
   return (
