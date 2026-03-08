@@ -35,6 +35,7 @@ export default function Dashboard() {
   const [sessionVoiceFileName, setSessionVoiceFileName] = useState('');
   const [speed, setSpeed] = useState(1);
   const [pitch, setPitch] = useState(0);
+  const [format, setFormat] = useState('mp3');
   const [generating, setGenerating] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [genError, setGenError] = useState<string | null>(null);
@@ -68,6 +69,10 @@ export default function Dashboard() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = '/login'; return; }
       setUser(session.user);
+      // Clear any leftover voice state from previous session
+      setSelectedVoice(null);
+      setSessionVoiceFile(null);
+      setSessionVoiceFileName(null);
       const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
       setProfile(data);
       const { data: voiceData } = await supabase.from('voices').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false });
@@ -121,6 +126,11 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
+    // Clear all voice state before logging out
+    setSelectedVoice(null);
+    setSessionVoiceFile(null);
+    setSessionVoiceFileName('');
+    setAudioUrl(null);
     await supabase.auth.signOut();
     window.location.href = '/';
   };
@@ -168,6 +178,7 @@ export default function Dashboard() {
       }
       formData.append('speed', speed.toString());
       formData.append('pitch', pitch.toString());
+      formData.append('format', format);
       return formData;
     };
 
@@ -204,6 +215,10 @@ export default function Dashboard() {
 
       if (!success) {
         setGenError('All servers are currently busy. Please try again in a moment.');
+      } else {
+        // Clear session voice after successful generation to prevent bleeding between users
+        setSessionVoiceFile(null);
+        setSessionVoiceFileName('');
       }
     } catch {
       setGenError('Generation failed. Please try again.');
@@ -478,6 +493,21 @@ export default function Dashboard() {
                         <div className="slider-label">Pitch <span>{pitch > 0 ? `+${pitch}` : pitch}</span></div>
                         <input type="range" min="-10" max="10" step="1" value={pitch} onChange={e => setPitch(parseInt(e.target.value))} />
                       </div>
+                      <div style={{marginBottom: 16}}>
+                        <div className="slider-label">Output Format <span style={{textTransform:'uppercase'}}>{format}</span></div>
+                        <div style={{display:'flex', gap:8, flexWrap:'wrap', marginTop:8}}>
+                          {['mp3','wav','ogg','flac','aac','m4a'].map(f => (
+                            <button key={f} onClick={() => setFormat(f)} style={{
+                              padding:'6px 14px', fontFamily:'Space Mono,monospace', fontSize:10,
+                              letterSpacing:'0.15em', textTransform:'uppercase', cursor:'pointer',
+                              border: format === f ? '1px solid var(--gold)' : '1px solid rgba(245,240,232,0.1)',
+                              background: format === f ? 'rgba(201,168,76,0.15)' : 'transparent',
+                              color: format === f ? 'var(--gold)' : 'rgba(245,240,232,0.4)',
+                              transition:'all 0.2s'
+                            }}>{f}</button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className="card card-accent">
@@ -492,7 +522,7 @@ export default function Dashboard() {
                     <div className="audio-card" style={{ marginTop: 16 }}>
                       <p className="audio-label">Generated Audio</p>
                       <audio controls src={audioUrl} />
-                      <a href={audioUrl} download="soviron-output.wav" className="download-btn">↓ Download WAV</a>
+                      <a href={audioUrl} download={`soviron-output.${format}`} className="download-btn">↓ Download {format.toUpperCase()}</a>
                     </div>
                   )}
                 </div>
