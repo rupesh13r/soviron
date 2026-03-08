@@ -140,21 +140,12 @@ export default function Dashboard() {
   const charsRemaining = profile ? profile.chars_limit - profile.chars_used : 0;
   const charsPercent = profile ? Math.min((profile.chars_used / profile.chars_limit) * 100, 100) : 0;
 
+  // BACKENDS in priority order — frontend tries each until one succeeds
   const BACKENDS = [
     { name: 'Modal', url: 'https://rupeshrajbhar1508--soviron-tts-fastapi-app.modal.run' },
     { name: 'Cerebrium', url: 'https://api.aws.us-east-1.cerebrium.ai/v4/p-c85ac149/soviron-tts' },
     { name: 'GCP VM', url: 'http://35.206.231.152:8000' },
   ];
-
-  // Keep-alive ping — runs every 4 minutes to prevent cold starts
-  useEffect(() => {
-    const ping = () => {
-      fetch('https://rupeshrajbhar1508--soviron-tts-fastapi-app.modal.run/health').catch(() => {});
-    };
-    ping(); // ping immediately on load
-    const interval = setInterval(ping, 4 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleGenerate = async () => {
     if (!text.trim()) { setGenError('Please enter some text.'); return; }
