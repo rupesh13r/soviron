@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [generating, setGenerating] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [genError, setGenError] = useState<string | null>(null);
+  const [genStatus, setGenStatus] = useState('');
 
   // Clone tab
   const [voices, setVoices] = useState<Voice[]>([]);
@@ -129,11 +130,29 @@ export default function Dashboard() {
   const charsRemaining = profile ? profile.chars_limit - profile.chars_used : 0;
   const charsPercent = profile ? Math.min((profile.chars_used / profile.chars_limit) * 100, 100) : 0;
 
+  const BACKENDS = [
+    { name: 'Modal', url: 'https://rupeshrajbhar1508--soviron-tts-fastapi-app.modal.run' },
+    { name: 'Cerebrium', url: 'https://api.aws.us-east-1.cerebrium.ai/v4/p-c85ac149/soviron-tts' },
+    { name: 'GCP VM', url: 'http://35.206.231.152:8000' },
+  ];
+
+  // Keep-alive ping — runs every 4 minutes to prevent cold starts
+  useEffect(() => {
+    const ping = () => {
+      fetch('https://rupeshrajbhar1508--soviron-tts-fastapi-app.modal.run/health').catch(() => {});
+    };
+    ping(); // ping immediately on load
+    const interval = setInterval(ping, 4 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleGenerate = async () => {
     if (!text.trim()) { setGenError('Please enter some text.'); return; }
     if (text.length > charsRemaining) { setGenError('Not enough characters remaining. Please upgrade.'); return; }
-    setGenerating(true); setGenError(null); setAudioUrl(null);
-    try {
+    setGenerating(true); setGenError(null); setAudioUrl(null); setGenStatus('');
+
+    // Build FormData once
+    const buildFormData = async () => {
       const formData = new FormData();
       formData.append('text', text);
       if (selectedVoice && isPaid) {
@@ -149,16 +168,48 @@ export default function Dashboard() {
       }
       formData.append('speed', speed.toString());
       formData.append('pitch', pitch.toString());
-      const res = await fetch(`${process.env.NEXT_PUBLIC_VM_URL}/generate`, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error('failed');
-      const blob = await res.blob();
-      setAudioUrl(URL.createObjectURL(blob));
-      await supabase.from('profiles').update({ chars_used: (profile?.chars_used || 0) + text.length }).eq('id', user.id);
-      setProfile((prev: any) => ({ ...prev, chars_used: (prev?.chars_used || 0) + text.length }));
+      return formData;
+    };
+
+    try {
+      const formData = await buildFormData();
+      let success = false;
+
+      for (const backend of BACKENDS) {
+        try {
+          setGenStatus(backend.name === 'Modal'
+            ? 'Warming up servers... this may take up to 60 seconds on first use.'
+            : `Trying backup server (${backend.name})...`
+          );
+
+          const res = await fetch(`${backend.url}/generate`, {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (res.ok) {
+            const blob = await res.blob();
+            setAudioUrl(URL.createObjectURL(blob));
+            await supabase.from('profiles').update({ chars_used: (profile?.chars_used || 0) + text.length }).eq('id', user.id);
+            setProfile((prev: any) => ({ ...prev, chars_used: (prev?.chars_used || 0) + text.length }));
+            setGenStatus('');
+            success = true;
+            break;
+          }
+        } catch {
+          // Try next backend
+          continue;
+        }
+      }
+
+      if (!success) {
+        setGenError('All servers are currently busy. Please try again in a moment.');
+      }
     } catch {
-      setGenError('Generation failed. Make sure the VM is running.');
+      setGenError('Generation failed. Please try again.');
     } finally {
       setGenerating(false);
+      setGenStatus('');
     }
   };
 
@@ -434,6 +485,7 @@ export default function Dashboard() {
                     <button className="gen-btn" onClick={handleGenerate} disabled={generating || !text.trim()}>
                       {generating ? 'Generating...' : 'Generate Speech →'}
                     </button>
+                    {generating && genStatus && <p style={{fontFamily:'Space Mono',fontSize:10,color:'rgba(245,240,232,0.4)',marginTop:12,letterSpacing:'0.05em',lineHeight:1.6}}>{genStatus}</p>}
                     {genError && <p className="error-msg">{genError}</p>}
                   </div>
                   {audioUrl && (
