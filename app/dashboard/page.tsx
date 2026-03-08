@@ -184,22 +184,56 @@ export default function Dashboard() {
             : `Trying backup server (${backend.name})...`
           );
 
-          const res = await fetch(`${backend.url}/generate`, {
-            method: 'POST',
-            body: formData,
-          });
-
-          if (res.ok) {
-            const blob = await res.blob();
-            setAudioUrl(URL.createObjectURL(blob));
-            await supabase.from('profiles').update({ chars_used: (profile?.chars_used || 0) + text.length }).eq('id', user.id);
-            setProfile((prev: any) => ({ ...prev, chars_used: (prev?.chars_used || 0) + text.length }));
-            setGenStatus('');
-            success = true;
-            break;
+          if (backend.name === 'Cerebrium') {
+            // Cerebrium expects JSON with base64 audio
+            const body: any = { text, speed, pitch, format };
+            if (sessionVoiceFile) {
+              const reader = new FileReader();
+              const audioB64 = await new Promise<string>((resolve) => {
+                reader.onload = () => resolve((reader.result as string).split(',')[1]);
+                reader.readAsDataURL(sessionVoiceFile);
+              });
+              body.audio_prompt_b64 = audioB64;
+            } else if (selectedVoice && isPaid) {
+              const { data: signedUrlData } = await supabase.storage
+                .from('voices').createSignedUrl(selectedVoice.file_path, 60);
+              if (signedUrlData) {
+                const voiceRes = await fetch(signedUrlData.signedUrl);
+                const voiceBlob = await voiceRes.blob();
+                const reader = new FileReader();
+                const audioB64 = await new Promise<string>((resolve) => {
+                  reader.onload = () => resolve((reader.result as string).split(',')[1]);
+                  reader.readAsDataURL(voiceBlob);
+                });
+                body.audio_prompt_b64 = audioB64;
+              }
+            }
+            const res = await fetch(`${backend.url}/generate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            });
+            if (res.ok) {
+              const json = await res.json();
+              const audioBytes = Uint8Array.from(atob(json.audio_b64), c => c.charCodeAt(0));
+              const blob = new Blob([audioBytes], { type: json.media_type });
+              setAudioUrl(URL.createObjectURL(blob));
+              await supabase.from('profiles').update({ chars_used: (profile?.chars_used || 0) + text.length }).eq('id', user.id);
+              setProfile((prev: any) => ({ ...prev, chars_used: (prev?.chars_used || 0) + text.length }));
+              setGenStatus(''); success = true; break;
+            }
+          } else {
+            // Modal and GCP VM — FormData, binary response
+            const res = await fetch(`${backend.url}/generate`, { method: 'POST', body: formData });
+            if (res.ok) {
+              const blob = await res.blob();
+              setAudioUrl(URL.createObjectURL(blob));
+              await supabase.from('profiles').update({ chars_used: (profile?.chars_used || 0) + text.length }).eq('id', user.id);
+              setProfile((prev: any) => ({ ...prev, chars_used: (prev?.chars_used || 0) + text.length }));
+              setGenStatus(''); success = true; break;
+            }
           }
         } catch {
-          // Try next backend
           continue;
         }
       }
