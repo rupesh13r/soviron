@@ -327,7 +327,7 @@ export default function LandingPage() {
       <section className="hero">
         <div className="hero-bg" />
         <div className="hero-line" />
-        <p className="hero-tag">AI Voice Cloning — Powered by Chatterbox</p>
+        <p className="hero-tag">AI Voice Cloning — Powered by Soviron</p>
         <h1 className="hero-title">
           Your voice,<br />
           <em>anywhere</em><br />
@@ -373,7 +373,7 @@ export default function LandingPage() {
             { icon: '🎙', title: 'Voice Cloning', desc: 'Upload a 10–30 second sample and clone any voice with remarkable accuracy. Paid users save up to 5 voice profiles.', num: '01' },
             { icon: '⚡', title: 'Fast Generation', desc: 'Results in under 15 seconds. No queues, no waiting. Scale from 5K to 1.5M characters per month.', num: '02' },
             { icon: '🔒', title: 'Your Voice, Private', desc: 'Voice samples are encrypted and never shared. Stored securely, deleted on request. Full control, always.', num: '03' },
-            { icon: '🌐', title: 'Any Language', desc: 'Chatterbox handles multiple languages naturally. Generate content for global audiences without re-recording.', num: '04' },
+            { icon: '🌐', title: 'Any Language', desc: 'Soviron handles multiple languages naturally. Generate content for global audiences without re-recording.', num: '04' },
             { icon: '📥', title: 'Download as WAV', desc: 'Every generation is a high-quality WAV file. Ready for podcasts, videos, voiceovers, or any use case.', num: '05' },
             { icon: '🤖', title: 'API Access', desc: 'Integrate Soviron into your workflow. API access available on Creator, Pro, and Studio plans.', num: '06' },
           ].map((f) => (

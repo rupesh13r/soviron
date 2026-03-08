@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { text, speed = 1.0, pitch = 0 } = body;
+    const { text, speed = 1.0, pitch = 0, voice_id } = body;
 
     if (!text) return NextResponse.json({ error: 'text field is required.' }, { status: 400 });
     if (text.length > 50000) return NextResponse.json({ error: 'Text exceeds 50,000 character limit.' }, { status: 400 });
@@ -58,6 +58,33 @@ export async function POST(req: NextRequest) {
     formData.append('text', text);
     formData.append('speed', speed.toString());
     formData.append('pitch', pitch.toString());
+
+    // Voice cloning — fetch saved voice from Supabase Storage
+    if (voice_id) {
+      const { data: voice } = await supabase
+        .from('voices')
+        .select('file_path, user_id')
+        .eq('id', voice_id)
+        .eq('user_id', keyData.user_id)
+        .single();
+
+      if (!voice) {
+        return NextResponse.json({ error: 'Voice not found or does not belong to your account.' }, { status: 404 });
+      }
+
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+        .from('voices')
+        .createSignedUrl(voice.file_path, 60);
+
+      if (signedUrlError || !signedUrlData) {
+        return NextResponse.json({ error: 'Could not fetch voice file.' }, { status: 500 });
+      }
+
+      const voiceRes = await fetch(signedUrlData.signedUrl);
+      const voiceBlob = await voiceRes.blob();
+      const voiceFile = new File([voiceBlob], 'voice.wav', { type: 'audio/wav' });
+      formData.append('audio_prompt', voiceFile);
+    }
 
     const vmRes = await fetch(`${process.env.NEXT_PUBLIC_VM_URL}/generate`, {
       method: 'POST',
@@ -101,7 +128,7 @@ export async function GET() {
     usage: {
       method: 'POST',
       headers: { 'x-api-key': 'your-api-key', 'Content-Type': 'application/json' },
-      body: { text: 'Hello world', speed: 1.0, pitch: 0 },
+      body: { text: 'Hello world', speed: 1.0, pitch: 0, voice_id: 'optional-saved-voice-uuid' },
       response: 'audio/wav binary'
     }
   });
