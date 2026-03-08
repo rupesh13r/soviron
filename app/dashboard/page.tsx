@@ -186,7 +186,7 @@ export default function Dashboard() {
 
           if (backend.name === 'Cerebrium') {
             // Cerebrium expects JSON with base64 audio
-            const body: any = { text, speed, pitch, format };
+            const body: any = { text, speed: Number(speed), pitch: Number(pitch), format: String(format) };
             if (sessionVoiceFile) {
               const reader = new FileReader();
               const audioB64 = await new Promise<string>((resolve) => {
