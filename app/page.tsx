@@ -439,9 +439,13 @@ export default function LandingPage() {
       </section>
 
       <footer>
-        <div className="footer-logo">Soviron</div>
-        <p className="footer-copy">© 2026 Soviron. All rights reserved.</p>
-      </footer>
+  <div className="footer-logo">Soviron</div>
+  <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+    <a href="/privacy" style={{ fontFamily: 'Space Mono, monospace', fontSize: 10, letterSpacing: '0.15em', color: 'rgba(245,240,232,0.2)', textDecoration: 'none' }}>Privacy</a>
+    <a href="/terms" style={{ fontFamily: 'Space Mono, monospace', fontSize: 10, letterSpacing: '0.15em', color: 'rgba(245,240,232,0.2)', textDecoration: 'none' }}>Terms</a>
+  </div>
+  <p className="footer-copy">© 2026 Soviron. All rights reserved.</p>
+</footer>
     </>
   );
 }
