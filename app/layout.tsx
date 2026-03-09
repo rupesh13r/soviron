@@ -2,8 +2,22 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Soviron — AI Voice Cloning",
-  description: "Clone any voice with a short audio sample. Generate natural, expressive speech in seconds. Professional quality, at a fraction of the cost.",
+  title: "Soviron — AI Text to Speech & Voice Cloning for Indian Languages",
+  description: "Generate natural AI voices in Hindi, Tamil, Telugu, and more. Clone any voice in seconds. Free to start — no credit card required.",
+  keywords: "text to speech India, Hindi TTS, voice cloning India, AI voice generator, Indian languages TTS, Hindi text to speech",
+  metadataBase: new URL("https://soviron.tech"),
+  openGraph: {
+    title: "Soviron — AI Text to Speech & Voice Cloning",
+    description: "Generate natural AI voices in Hindi, Tamil, Telugu, and more. Clone any voice in seconds.",
+    url: "https://soviron.tech",
+    siteName: "Soviron",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Soviron — AI Text to Speech & Voice Cloning",
+    description: "Generate natural AI voices in Hindi, Tamil, Telugu, and more.",
+  },
   icons: {
     icon: "/favicon.svg",
   },
