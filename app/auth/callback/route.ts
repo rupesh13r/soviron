@@ -3,8 +3,9 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soviron.tech'
 
   if (code) {
     const cookieStore = await cookies()
@@ -23,8 +24,7 @@ export async function GET(request: Request) {
       }
     )
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) return NextResponse.redirect(`${origin}/dashboard`)
+    if (!error) return NextResponse.redirect(`${siteUrl}/dashboard`)
   }
-
-  return NextResponse.redirect(`${origin}/login`)
+  return NextResponse.redirect(`${siteUrl}/login`)
 }
