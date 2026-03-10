@@ -155,7 +155,24 @@ export function Features() {
           >
             <div className="flex items-center gap-8">
               <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-6 h-6 text-white" />
+                <svg viewBox="0 0 40 40" width="28" height="28" fill="none">
+                  <motion.circle cx="8" cy="20" r="4" fill="white"
+                    animate={{ opacity: [1, 0.4, 1] }}
+                    transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <motion.circle cx="32" cy="20" r="4" fill="white"
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <motion.line x1="13" y1="20" x2="27" y2="20" stroke="white" strokeWidth="2" strokeLinecap="round"
+                    animate={{ pathLength: [0, 1] }}
+                    transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <motion.circle cx="20" cy="20" r="2.5" fill="white"
+                    animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
+                    transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                </svg>
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-black mb-1">API access</h3>
