@@ -4,7 +4,7 @@ import { Play, Sparkles } from "lucide-react";
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 bg-gradient-to-b from-gray-50 to-white">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 pt-32 bg-gradient-to-b from-gray-50 to-white">
       {/* 3D Grid Background */}
       <div className="absolute inset-0 opacity-30">
         <div
