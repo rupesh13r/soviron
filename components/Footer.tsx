@@ -8,8 +8,14 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-black flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg">S</span>
+              <div className="w-9 h-9 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="36" height="36">
+                  <circle cx="150" cy="150" r="150" fill="#0A0A0A"/>
+                  <rect x="80" y="80" width="55" height="55" fill="white" rx="6" transform="rotate(15 107 107)"/>
+                  <rect x="165" y="75" width="55" height="55" fill="white" rx="6" transform="rotate(-10 192 102)"/>
+                  <rect x="75" y="165" width="55" height="55" fill="white" rx="6" transform="rotate(10 102 192)"/>
+                  <rect x="165" y="165" width="55" height="55" fill="white" rx="6" transform="rotate(-15 192 192)"/>
+                </svg>
               </div>
               <span className="text-2xl font-bold text-black">Soviron</span>
             </div>

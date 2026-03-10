@@ -44,7 +44,7 @@ export function Hero() {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-black/10 shadow-lg shadow-black/5 mb-8"
         >
           <Sparkles className="w-4 h-4 text-black" />
-          <span className="text-sm text-gray-700 font-medium">Powered by Chatterbox TTS</span>
+          <span className="text-sm text-gray-700 font-medium">AI Voice Cloning</span>
         </motion.div>
 
         {/* Main headline */}
@@ -67,8 +67,6 @@ export function Hero() {
           className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed"
         >
           Upload a voice sample. Type your script. Get broadcast-ready audio in seconds.
-          <br />
-          Powered by Chatterbox TTS.
         </motion.p>
 
         {/* CTA buttons */}
