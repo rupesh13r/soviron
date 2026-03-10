@@ -4,120 +4,117 @@ export default function ApiDocs() {
   return (
     <>
       <style>{`
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root { --bg: #0a0b14; --accent: #6366f1; --accent-light: #818cf8; --cyan: #06b6d4; --text: #e2e8f0; --text-muted: #94a3b8; --text-dim: #64748b; --border-s: rgba(255,255,255,0.06); --border: rgba(99,102,241,0.12); --r: 12px; --r-sm: 8px; }
-        html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
-        .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 60px; display: flex; align-items: center; justify-content: space-between; background: rgba(10,11,20,0.85); border-bottom: 1px solid var(--border-s); backdrop-filter: blur(20px); }
-        .nav-logo { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
-        .nav-links { display: flex; gap: 32px; align-items: center; }
-        .nav-link { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; transition: color 0.3s; }
-        .nav-link:hover { color: var(--text); }
-        .nav-btn { font-size: 13px; font-weight: 600; color: #fff; background: var(--accent); border: none; padding: 10px 24px; border-radius: var(--r-sm); cursor: pointer; text-decoration: none; transition: all 0.3s; }
-        .nav-btn:hover { background: var(--accent-light); box-shadow: 0 4px 20px rgba(99,102,241,0.35); }
-        .layout { display: flex; padding-top: 80px; min-height: 100vh; }
-        .sidebar { width: 240px; flex-shrink: 0; position: sticky; top: 80px; height: calc(100vh - 80px); overflow-y: auto; padding: 40px 24px; border-right: 1px solid var(--border-s); }
-        .sidebar-section { margin-bottom: 28px; }
-        .sidebar-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
-        .sidebar-link { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; padding: 6px 0; transition: color 0.2s; }
-        .sidebar-link:hover { color: var(--accent-light); }
-        .main { flex: 1; padding: 48px 72px 80px; max-width: 860px; }
-        .section { margin-bottom: 64px; }
-        .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 12px; }
-        .section-title { font-size: 36px; font-weight: 700; line-height: 1.1; margin-bottom: 16px; letter-spacing: -0.02em; }
-        .section-title em { font-style: normal; background: linear-gradient(135deg, var(--accent), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .section-sub { font-size: 15px; color: var(--text-muted); line-height: 1.8; margin-bottom: 28px; }
-        .divider { height: 1px; background: var(--border-s); margin-bottom: 36px; }
-        .endpoint-box { display: flex; align-items: center; gap: 12px; background: rgba(99,102,241,0.06); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 16px 20px; margin-bottom: 24px; }
-        .method-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #fff; background: var(--accent); padding: 4px 12px; border-radius: 4px; flex-shrink: 0; }
-        .endpoint-url { font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 13px; color: var(--text); }
-        .code-block { background: #0d0e1a; border: 1px solid var(--border-s); border-radius: var(--r-sm); padding: 24px 28px; font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 12px; color: var(--text-muted); line-height: 1.9; overflow-x: auto; white-space: pre; margin-bottom: 24px; position: relative; }
-        .code-label { position: absolute; top: 12px; right: 16px; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
-        .param-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-        .param-table th { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); }
-        .param-table td { font-size: 13px; color: var(--text-muted); padding: 12px 16px; border-bottom: 1px solid var(--border-s); vertical-align: top; }
-        .param-table td:first-child { color: var(--accent-light); font-weight: 600; font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 12px; }
-        .required { color: #ef4444; font-size: 10px; font-weight: 600; margin-left: 4px; }
-        .optional { color: var(--text-dim); font-size: 10px; margin-left: 4px; }
-        .error-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-        .error-table th { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); }
-        .error-table td { font-size: 13px; color: var(--text-muted); padding: 12px 16px; border-bottom: 1px solid var(--border-s); }
-        .error-table td:first-child { color: #ef4444; font-weight: 700; }
-        .inline-code { font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 12px; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); border-radius: 4px; padding: 2px 8px; color: var(--accent-light); }
-        .info-box { background: rgba(99,102,241,0.06); border-left: 3px solid var(--accent); border-radius: 0 var(--r-sm) var(--r-sm) 0; padding: 16px 20px; margin-bottom: 24px; }
-        .info-box p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
-        .sub-heading { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; margin-top: 28px; }
-        @media (max-width: 900px) { .sidebar { display: none; } .main { padding: 32px 24px 60px; } .nav { padding: 16px 24px; } }
+        .apid-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 60px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.85); border-bottom: 1px solid rgba(0,0,0,0.08); backdrop-filter: blur(20px); }
+        .apid-nav-logo { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: #080808; text-decoration: none; }
+        .apid-nav-links { display: flex; gap: 32px; align-items: center; }
+        .apid-nav-link { font-size: 13px; font-weight: 500; color: #6B7280; text-decoration: none; transition: color 0.3s; }
+        .apid-nav-link:hover { color: #080808; }
+        .apid-nav-btn { font-size: 13px; font-weight: 600; color: #FFFFFF; background: #080808; border: none; padding: 10px 24px; border-radius: 10px; cursor: pointer; text-decoration: none; transition: all 0.3s; }
+        .apid-nav-btn:hover { transform: scale(1.05); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .apid-layout { display: flex; padding-top: 80px; min-height: 100vh; background: #FFFFFF; }
+        .apid-sidebar { width: 240px; flex-shrink: 0; position: sticky; top: 80px; height: calc(100vh - 80px); overflow-y: auto; padding: 40px 24px; border-right: 1px solid rgba(0,0,0,0.08); }
+        .apid-sidebar-section { margin-bottom: 28px; }
+        .apid-sidebar-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #9CA3AF; margin-bottom: 10px; }
+        .apid-sidebar-link { display: block; font-size: 13px; font-weight: 500; color: #6B7280; text-decoration: none; padding: 6px 0; transition: color 0.2s; }
+        .apid-sidebar-link:hover { color: #080808; }
+        .apid-main { flex: 1; padding: 48px 72px 80px; max-width: 860px; }
+        .apid-section { margin-bottom: 64px; }
+        .apid-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: #6B7280; margin-bottom: 12px; }
+        .apid-section-title { font-size: 36px; font-weight: 700; line-height: 1.1; margin-bottom: 16px; letter-spacing: -0.02em; color: #080808; }
+        .apid-section-sub { font-size: 15px; color: #6B7280; line-height: 1.8; margin-bottom: 28px; }
+        .apid-divider { height: 1px; background: rgba(0,0,0,0.08); margin-bottom: 36px; }
+        .apid-endpoint-box { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+        .apid-method-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #FFFFFF; background: #080808; padding: 4px 12px; border-radius: 4px; flex-shrink: 0; }
+        .apid-endpoint-url { font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 13px; color: #080808; }
+        .apid-code-block { background: #F5F5F5; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 24px 28px; font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 12px; color: #080808; line-height: 1.9; overflow-x: auto; white-space: pre; margin-bottom: 24px; position: relative; }
+        .apid-code-label { position: absolute; top: 12px; right: 16px; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #9CA3AF; }
+        .apid-param-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .apid-param-table th { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #9CA3AF; padding: 10px 16px; text-align: left; border-bottom: 1px solid rgba(0,0,0,0.08); }
+        .apid-param-table td { font-size: 13px; color: #6B7280; padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.04); vertical-align: top; }
+        .apid-param-table td:first-child { color: #080808; font-weight: 600; font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 12px; }
+        .apid-required { color: #ef4444; font-size: 10px; font-weight: 600; margin-left: 4px; }
+        .apid-optional { color: #9CA3AF; font-size: 10px; margin-left: 4px; }
+        .apid-error-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .apid-error-table th { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #9CA3AF; padding: 10px 16px; text-align: left; border-bottom: 1px solid rgba(0,0,0,0.08); }
+        .apid-error-table td { font-size: 13px; color: #6B7280; padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.04); }
+        .apid-error-table td:first-child { color: #ef4444; font-weight: 700; }
+        .apid-inline-code { font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 12px; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.08); border-radius: 4px; padding: 2px 8px; color: #080808; }
+        .apid-info-box { background: rgba(0,0,0,0.02); border-left: 3px solid #080808; border-radius: 0 10px 10px 0; padding: 16px 20px; margin-bottom: 24px; }
+        .apid-info-box p { font-size: 14px; color: #6B7280; line-height: 1.7; }
+        .apid-info-box a { color: #080808; text-decoration: underline; text-underline-offset: 3px; }
+        .apid-sub-heading { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6B7280; margin-bottom: 12px; margin-top: 28px; }
+        @media (max-width: 900px) { .apid-sidebar { display: none; } .apid-main { padding: 32px 24px 60px; } .apid-nav { padding: 16px 24px; } }
       `}</style>
 
-      <nav className="nav">
-        <a href="/" className="nav-logo">Soviron</a>
-        <div className="nav-links">
-          <a href="/pricing" className="nav-link">Pricing</a>
-          <a href="/dashboard" className="nav-btn">Dashboard</a>
+      <nav className="apid-nav">
+        <a href="/" className="apid-nav-logo">Soviron</a>
+        <div className="apid-nav-links">
+          <a href="/pricing" className="apid-nav-link">Pricing</a>
+          <a href="/dashboard" className="apid-nav-btn">Dashboard</a>
         </div>
       </nav>
 
-      <div className="layout">
-        <aside className="sidebar">
-          <div className="sidebar-section">
-            <p className="sidebar-label">Getting Started</p>
-            <a href="#overview" className="sidebar-link">Overview</a>
-            <a href="#authentication" className="sidebar-link">Authentication</a>
-            <a href="#quickstart" className="sidebar-link">Quickstart</a>
+      <div className="apid-layout">
+        <aside className="apid-sidebar">
+          <div className="apid-sidebar-section">
+            <p className="apid-sidebar-label">Getting Started</p>
+            <a href="#overview" className="apid-sidebar-link">Overview</a>
+            <a href="#authentication" className="apid-sidebar-link">Authentication</a>
+            <a href="#quickstart" className="apid-sidebar-link">Quickstart</a>
           </div>
-          <div className="sidebar-section">
-            <p className="sidebar-label">Endpoints</p>
-            <a href="#tts" className="sidebar-link">POST /api/tts</a>
+          <div className="apid-sidebar-section">
+            <p className="apid-sidebar-label">Endpoints</p>
+            <a href="#tts" className="apid-sidebar-link">POST /api/tts</a>
           </div>
-          <div className="sidebar-section">
-            <p className="sidebar-label">Reference</p>
-            <a href="#parameters" className="sidebar-link">Parameters</a>
-            <a href="#response" className="sidebar-link">Response</a>
-            <a href="#errors" className="sidebar-link">Error Codes</a>
+          <div className="apid-sidebar-section">
+            <p className="apid-sidebar-label">Reference</p>
+            <a href="#parameters" className="apid-sidebar-link">Parameters</a>
+            <a href="#response" className="apid-sidebar-link">Response</a>
+            <a href="#errors" className="apid-sidebar-link">Error Codes</a>
           </div>
-          <div className="sidebar-section">
-            <p className="sidebar-label">Examples</p>
-            <a href="#curl" className="sidebar-link">cURL</a>
-            <a href="#python" className="sidebar-link">Python</a>
-            <a href="#javascript" className="sidebar-link">JavaScript</a>
-            <a href="#nodejs" className="sidebar-link">Node.js</a>
+          <div className="apid-sidebar-section">
+            <p className="apid-sidebar-label">Examples</p>
+            <a href="#curl" className="apid-sidebar-link">cURL</a>
+            <a href="#python" className="apid-sidebar-link">Python</a>
+            <a href="#javascript" className="apid-sidebar-link">JavaScript</a>
+            <a href="#nodejs" className="apid-sidebar-link">Node.js</a>
           </div>
         </aside>
 
-        <main className="main">
+        <main className="apid-main">
 
-          <div className="section" id="overview">
-            <p className="eyebrow">Soviron API v1.0</p>
-            <h1 className="section-title">Voice Cloning <em>API</em></h1>
-            <p className="section-sub">Clone any voice and generate speech programmatically. Save a voice in your dashboard, then pass its ID in API requests to generate audio in that voice. Available on Creator, Pro, and Studio plans.</p>
-            <div className="info-box">
-              <p>Base URL: <span className="inline-code">https://soviron.vercel.app</span></p>
+          <div className="apid-section" id="overview">
+            <p className="apid-eyebrow">Soviron API v1.0</p>
+            <h1 className="apid-section-title">Voice Cloning API</h1>
+            <p className="apid-section-sub">Clone any voice and generate speech programmatically. Save a voice in your dashboard, then pass its ID in API requests to generate audio in that voice. Available on Creator, Pro, and Studio plans.</p>
+            <div className="apid-info-box">
+              <p>Base URL: <span className="apid-inline-code">https://soviron.vercel.app</span></p>
             </div>
-            <div className="divider" />
+            <div className="apid-divider" />
           </div>
 
-          <div className="section" id="authentication">
-            <p className="eyebrow">Authentication</p>
-            <h2 className="section-title">API <em>Keys</em></h2>
-            <p className="section-sub">All requests must include your API key in the <span className="inline-code">x-api-key</span> header. Generate your key from the dashboard under Developer → API Access.</p>
-            <div className="code-block">
-              <span className="code-label">HEADER</span>
+          <div className="apid-section" id="authentication">
+            <p className="apid-eyebrow">Authentication</p>
+            <h2 className="apid-section-title">API Keys</h2>
+            <p className="apid-section-sub">All requests must include your API key in the <span className="apid-inline-code">x-api-key</span> header. Generate your key from the dashboard under Developer → API Access.</p>
+            <div className="apid-code-block">
+              <span className="apid-code-label">HEADER</span>
 {`x-api-key: sov_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`}
             </div>
-            <div className="info-box">
-              <p>Keep your API key secret. Do not expose it in client-side code or public repositories. You can generate up to 3 active keys and revoke them anytime from your <a href="/dashboard" style={{color: 'var(--gold)'}}>dashboard</a>.</p>
+            <div className="apid-info-box">
+              <p>Keep your API key secret. Do not expose it in client-side code or public repositories. You can generate up to 3 active keys and revoke them anytime from your <a href="/dashboard">dashboard</a>.</p>
             </div>
-            <div className="divider" />
+            <div className="apid-divider" />
           </div>
 
-          <div className="section" id="quickstart">
-            <p className="eyebrow">Quickstart</p>
-            <h2 className="section-title">Your first <em>request</em></h2>
-            <p className="section-sub">Two ways to use the API — with a saved voice clone, or without (uses default Soviron voice).</p>
+          <div className="apid-section" id="quickstart">
+            <p className="apid-eyebrow">Quickstart</p>
+            <h2 className="apid-section-title">Your first request</h2>
+            <p className="apid-section-sub">Two ways to use the API — with a saved voice clone, or without (uses default Soviron voice).</p>
 
-            <p className="sub-heading">Without voice cloning (default voice)</p>
-            <div className="code-block">
-              <span className="code-label">CURL</span>
+            <p className="apid-sub-heading">Without voice cloning (default voice)</p>
+            <div className="apid-code-block">
+              <span className="apid-code-label">CURL</span>
 {`curl -X POST https://soviron.vercel.app/api/tts \\
   -H "x-api-key: YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
@@ -125,9 +122,9 @@ export default function ApiDocs() {
   --output speech.wav`}
             </div>
 
-            <p className="sub-heading">With voice cloning (your saved voice)</p>
-            <div className="code-block">
-              <span className="code-label">CURL</span>
+            <p className="apid-sub-heading">With voice cloning (your saved voice)</p>
+            <div className="apid-code-block">
+              <span className="apid-code-label">CURL</span>
 {`curl -X POST https://soviron.vercel.app/api/tts \\
   -H "x-api-key: YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
@@ -137,45 +134,45 @@ export default function ApiDocs() {
   }' \\
   --output speech.wav`}
             </div>
-            <div className="info-box">
-              <p>Find your voice UUIDs in the dashboard under My Voices, or by calling <span className="inline-code">GET /api/tts</span> which returns your account info.</p>
+            <div className="apid-info-box">
+              <p>Find your voice UUIDs in the dashboard under My Voices, or by calling <span className="apid-inline-code">GET /api/tts</span> which returns your account info.</p>
             </div>
-            <div className="divider" />
+            <div className="apid-divider" />
           </div>
 
-          <div className="section" id="tts">
-            <p className="eyebrow">Endpoint</p>
-            <h2 className="section-title">Generate <em>Speech</em></h2>
-            <p className="section-sub">Convert text to speech using your saved voice clone or the default voice.</p>
-            <div className="endpoint-box">
-              <span className="method-badge">POST</span>
-              <span className="endpoint-url">/api/tts</span>
+          <div className="apid-section" id="tts">
+            <p className="apid-eyebrow">Endpoint</p>
+            <h2 className="apid-section-title">Generate Speech</h2>
+            <p className="apid-section-sub">Convert text to speech using your saved voice clone or the default voice.</p>
+            <div className="apid-endpoint-box">
+              <span className="apid-method-badge">POST</span>
+              <span className="apid-endpoint-url">/api/tts</span>
             </div>
 
             <div id="parameters">
-              <p className="sub-heading">Request Body (JSON)</p>
-              <table className="param-table">
+              <p className="apid-sub-heading">Request Body (JSON)</p>
+              <table className="apid-param-table">
                 <thead>
                   <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>text <span className="required">required</span></td>
+                    <td>text <span className="apid-required">required</span></td>
                     <td>string</td>
                     <td>The text to convert to speech. Maximum 50,000 characters per request.</td>
                   </tr>
                   <tr>
-                    <td>voice_id <span className="optional">optional</span></td>
+                    <td>voice_id <span className="apid-optional">optional</span></td>
                     <td>string (UUID)</td>
                     <td>UUID of a saved voice from your account. If provided, output will clone that voice. If omitted, uses the default Soviron voice.</td>
                   </tr>
                   <tr>
-                    <td>speed <span className="optional">optional</span></td>
+                    <td>speed <span className="apid-optional">optional</span></td>
                     <td>number</td>
                     <td>Playback speed multiplier. Range: 0.5 – 2.0. Default: 1.0</td>
                   </tr>
                   <tr>
-                    <td>pitch <span className="optional">optional</span></td>
+                    <td>pitch <span className="apid-optional">optional</span></td>
                     <td>number</td>
                     <td>Pitch adjustment in semitones. Range: -10 to +10. Default: 0</td>
                   </tr>
@@ -184,11 +181,11 @@ export default function ApiDocs() {
             </div>
 
             <div id="response">
-              <p className="sub-heading">Response</p>
-              <div className="info-box">
-                <p>Returns a <span className="inline-code">audio/wav</span> binary on success (HTTP 200). Check response headers for quota info.</p>
+              <p className="apid-sub-heading">Response</p>
+              <div className="apid-info-box">
+                <p>Returns a <span className="apid-inline-code">audio/wav</span> binary on success (HTTP 200). Check response headers for quota info.</p>
               </div>
-              <table className="param-table">
+              <table className="apid-param-table">
                 <thead>
                   <tr><th>Header</th><th>Description</th></tr>
                 </thead>
@@ -201,8 +198,8 @@ export default function ApiDocs() {
             </div>
 
             <div id="errors">
-              <p className="sub-heading">Error Codes</p>
-              <table className="error-table">
+              <p className="apid-sub-heading">Error Codes</p>
+              <table className="apid-error-table">
                 <thead>
                   <tr><th>Status</th><th>Error</th><th>Description</th></tr>
                 </thead>
@@ -219,16 +216,16 @@ export default function ApiDocs() {
                 </tbody>
               </table>
             </div>
-            <div className="divider" />
+            <div className="apid-divider" />
           </div>
 
-          <div className="section" id="curl">
-            <p className="eyebrow">Examples</p>
-            <h2 className="section-title">Code <em>Examples</em></h2>
+          <div className="apid-section" id="curl">
+            <p className="apid-eyebrow">Examples</p>
+            <h2 className="apid-section-title">Code Examples</h2>
 
-            <p className="sub-heading">cURL</p>
-            <div className="code-block">
-              <span className="code-label">CURL</span>
+            <p className="apid-sub-heading">cURL</p>
+            <div className="apid-code-block">
+              <span className="apid-code-label">CURL</span>
 {`curl -X POST https://soviron.vercel.app/api/tts \\
   -H "x-api-key: YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
@@ -241,9 +238,9 @@ export default function ApiDocs() {
   --output output.wav`}
             </div>
 
-            <p className="sub-heading" id="python">Python</p>
-            <div className="code-block">
-              <span className="code-label">PYTHON</span>
+            <p className="apid-sub-heading" id="python">Python</p>
+            <div className="apid-code-block">
+              <span className="apid-code-label">PYTHON</span>
 {`import requests
 
 response = requests.post(
@@ -270,9 +267,9 @@ else:
     print("Error:", response.json())`}
             </div>
 
-            <p className="sub-heading" id="javascript">JavaScript (Browser)</p>
-            <div className="code-block">
-              <span className="code-label">JAVASCRIPT</span>
+            <p className="apid-sub-heading" id="javascript">JavaScript (Browser)</p>
+            <div className="apid-code-block">
+              <span className="apid-code-label">JAVASCRIPT</span>
 {`const response = await fetch("https://soviron.vercel.app/api/tts", {
   method: "POST",
   headers: {
@@ -300,9 +297,9 @@ if (response.ok) {
 }`}
             </div>
 
-            <p className="sub-heading" id="nodejs">Node.js</p>
-            <div className="code-block">
-              <span className="code-label">NODE.JS</span>
+            <p className="apid-sub-heading" id="nodejs">Node.js</p>
+            <div className="apid-code-block">
+              <span className="apid-code-label">NODE.JS</span>
 {`const fs = require("fs");
 
 const response = await fetch("https://soviron.vercel.app/api/tts", {
