@@ -125,9 +125,26 @@ export function VoiceCloneDemo() {
             className="relative rounded-2xl overflow-hidden"
             style={{ minHeight: "280px" }}
           >
-            {/* Gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-400 via-rose-400 to-pink-500" />
-            <div className="absolute inset-0 backdrop-blur-sm bg-black/10" />
+            {/* Layered 3D gradient background */}
+            <div className="absolute inset-0" style={{
+              background: "radial-gradient(ellipse at 30% 20%, #ff9f4a 0%, #ff6b35 40%, #c0392b 80%, #8b1a1a 100%)",
+            }} />
+            {/* Grain texture overlay */}
+            <svg className="absolute inset-0 w-full h-full opacity-30" xmlns="http://www.w3.org/2000/svg">
+              <filter id="grain">
+                <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch"/>
+                <feColorMatrix type="saturate" values="0"/>
+              </filter>
+              <rect width="100%" height="100%" filter="url(#grain)" opacity="0.4"/>
+            </svg>
+            {/* Specular highlight for 3D depth */}
+            <div className="absolute inset-0" style={{
+              background: "radial-gradient(ellipse at 40% 30%, rgba(255,220,150,0.35) 0%, transparent 60%)",
+            }} />
+            {/* Dark vignette edges */}
+            <div className="absolute inset-0" style={{
+              background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.25) 100%)",
+            }} />
 
             <div className="absolute inset-0 flex flex-col justify-between p-6">
               <div className="text-xs text-white/70 font-medium uppercase tracking-widest">Clone</div>
