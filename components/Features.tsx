@@ -42,7 +42,17 @@ export function Features() {
             />
             <div className="relative z-10">
               <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mb-6">
-                <Zap className="w-6 h-6 text-white" />
+                <svg viewBox="0 0 48 24" width="36" height="18" fill="none">
+                  <motion.path
+                    d="M0 12 Q6 2 12 12 Q18 22 24 12 Q30 2 36 12 Q42 22 48 12"
+                    stroke="white"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    fill="none"
+                    animate={{ pathLength: [0, 1, 0] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                </svg>
               </div>
               <h3 className="text-3xl font-bold text-white mb-3">Lightning fast</h3>
               <p className="text-gray-400 text-lg leading-relaxed max-w-sm">
