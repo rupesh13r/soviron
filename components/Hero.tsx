@@ -23,13 +23,13 @@ export function Hero() {
 
       {/* Floating 3D Elements */}
       <motion.div
-        className="absolute top-1/4 left-1/4 w-32 h-32 rounded-3xl bg-gradient-to-br from-gray-200 to-gray-300 shadow-2xl"
+        className="absolute top-1/3 left-1/4 w-32 h-32 rounded-3xl bg-gradient-to-br from-gray-200 to-gray-300 shadow-2xl"
         animate={{ y: [0, -30, 0], rotateZ: [0, 5, 0], rotateY: [0, 15, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         style={{ boxShadow: "20px 20px 60px rgba(0,0,0,0.1), -20px -20px 60px rgba(255,255,255,0.8)" }}
       />
       <motion.div
-        className="absolute bottom-1/3 right-1/4 w-24 h-24 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl"
+        className="absolute bottom-1/4 right-1/4 w-24 h-24 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl"
         animate={{ y: [0, 40, 0], rotateZ: [0, -10, 0] }}
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
         style={{ boxShadow: "15px 15px 40px rgba(0,0,0,0.08), -15px -15px 40px rgba(255,255,255,0.9)" }}
