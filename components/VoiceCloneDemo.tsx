@@ -47,7 +47,7 @@ export function VoiceCloneDemo() {
           </h2>
           <p className="text-xl text-gray-500">
             Upload a voice. Clone it. Compare side by side.
-          p>
+          </p>
         </motion.div>
 
         {/* Voice pills */}
