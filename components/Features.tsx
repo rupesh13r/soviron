@@ -82,12 +82,12 @@ export function Features() {
                 style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.5)" }}
               >
                 <motion.div
-                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 shadow-lg`}
+                  className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center mb-6 shadow-lg"
                   whileHover={{ rotateY: 15, rotateX: 10 }}
                   transition={{ duration: 0.3 }}
-                  style={{ transformStyle: "preserve-3d", boxShadow: "8px 8px 20px rgba(0,0,0,0.08), -4px -4px 12px rgba(255,255,255,0.8)" }}
+                  style={{ transformStyle: "preserve-3d" }}
                 >
-                  <feature.icon className={`w-7 h-7 ${feature.iconColor}`} />
+                  <feature.icon className="w-6 h-6 text-white" />
                 </motion.div>
                 <h3 className="text-2xl font-bold mb-3 text-black">{feature.title}</h3>
                 <p className="text-gray-600 leading-relaxed">{feature.description}</p>
