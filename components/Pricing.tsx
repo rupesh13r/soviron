@@ -4,6 +4,18 @@ import { Check, Zap } from "lucide-react";
 
 const plans = [
   {
+    name: "Free",
+    price: "0",
+    description: "Try it out, no commitment",
+    features: [
+      "5,000 characters/month",
+      "Standard voice quality",
+      "Community support",
+    ],
+    cta: "Start free",
+    highlighted: false,
+  },
+  {
     name: "Starter",
     price: "79",
     description: "Perfect for creators getting started",
@@ -31,9 +43,35 @@ const plans = [
     highlighted: true,
   },
   {
+    name: "Creator",
+    price: "349",
+    description: "For high-volume creators with API needs",
+    features: [
+      "300,000 characters/month",
+      "API access",
+      "Priority support",
+      "Top-ups available",
+    ],
+    cta: "Get started",
+    highlighted: false,
+  },
+  {
+    name: "Pro",
+    price: "699",
+    description: "For power users and small teams",
+    features: [
+      "700,000 characters/month",
+      "API access",
+      "Priority support",
+      "Top-ups available",
+    ],
+    cta: "Get started",
+    highlighted: false,
+  },
+  {
     name: "Studio",
     price: "1,299",
-    description: "For teams and power users",
+    description: "For teams and enterprises",
     features: [
       "1,500,000 characters/month",
       "Full API access",
@@ -44,6 +82,12 @@ const plans = [
     cta: "Get started",
     highlighted: false,
   },
+];
+
+const topups = [
+  { chars: "50,000", price: "79" },
+  { chars: "200,000", price: "249" },
+  { chars: "1,000,000", price: "799" },
 ];
 
 export function Pricing() {
@@ -65,19 +109,20 @@ export function Pricing() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        {/* Pricing grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              transition={{ duration: 0.5, delay: index * 0.08 }}
               whileHover={{ y: -8, scale: 1.02 }}
               className="relative"
             >
               {plan.highlighted && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-black text-white text-sm font-semibold flex items-center gap-2 shadow-lg">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-black text-white text-sm font-semibold flex items-center gap-2 shadow-lg z-10">
                   <Zap className="w-4 h-4" />
                   Most popular
                 </div>
@@ -98,8 +143,10 @@ export function Pricing() {
 
                 <div className="mb-8">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-bold text-black">₹{plan.price}</span>
-                    <span className="text-gray-500">/month</span>
+                    <span className="text-5xl font-bold text-black">
+                      {plan.price === "0" ? "Free" : `₹${plan.price}`}
+                    </span>
+                    {plan.price !== "0" && <span className="text-gray-500">/month</span>}
                   </div>
                 </div>
 
@@ -128,6 +175,41 @@ export function Pricing() {
             </motion.div>
           ))}
         </div>
+
+        {/* Top-ups section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="max-w-4xl mx-auto"
+        >
+          <div className="text-center mb-10">
+            <h3 className="text-3xl font-bold text-black mb-3">Need more characters?</h3>
+            <p className="text-gray-600">Top up anytime — no plan change needed.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {topups.map((topup, index) => (
+              <motion.div
+                key={topup.chars}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                whileHover={{ y: -4 }}
+                className="p-6 rounded-2xl bg-white border border-black/10 flex items-center justify-between"
+                style={{ boxShadow: "0 10px 30px rgba(0,0,0,0.06)" }}
+              >
+                <div>
+                  <div className="text-lg font-bold text-black">{topup.chars} chars</div>
+                  <div className="text-sm text-gray-500">one-time</div>
+                </div>
+                <div className="text-2xl font-bold text-black">₹{topup.price}</div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </section>
   );
