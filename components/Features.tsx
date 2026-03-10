@@ -26,8 +26,8 @@ const features = [
   },
   {
     icon: Cpu,
-    title: "Chatterbox TTS",
-    description: "Powered by state-of-the-art Chatterbox neural TTS for lifelike output.",
+    title: "Advanced AI",
+    description: "State-of-the-art neural networks deliver lifelike, natural-sounding voice output.",
     color: "from-purple-50 to-purple-100",
     iconColor: "text-purple-700",
   },
