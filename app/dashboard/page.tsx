@@ -286,280 +286,270 @@ export default function Dashboard() {
   };
 
   if (!user) return (
-    <div style={{ background: '#0a0b14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ fontSize: 14, fontWeight: 500, color: '#64748b' }}>LOADING...</p>
+    <div style={{ background: '#FFFFFF', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ fontSize: 14, fontWeight: 500, color: '#9CA3AF' }}>LOADING...</p>
     </div>
   );
 
   return (
     <>
       <style>{`
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-          --bg: #0a0b14; --bg-sec: #111225; --bg-card: rgba(17,18,37,0.7);
-          --accent: #6366f1; --accent-light: #818cf8; --accent-dim: rgba(99,102,241,0.35);
-          --cyan: #06b6d4; --cyan-dim: rgba(6,182,212,0.25);
-          --text: #e2e8f0; --text-muted: #94a3b8; --text-dim: #64748b;
-          --border: rgba(99,102,241,0.12); --border-s: rgba(255,255,255,0.06);
-          --r: 12px; --r-sm: 8px;
-        }
-        html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100%; }
-        .layout { display: flex; min-height: 100vh; }
+        /* ── DASHBOARD BASE ── */
+        .dash-layout { display: flex; min-height: 100vh; background: #FFFFFF; }
 
         /* SIDEBAR */
-        .sidebar {
-          background: var(--bg-sec); border-right: 1px solid var(--border-s);
+        .dash-sidebar {
+          background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08);
           padding: 32px 20px; display: flex; flex-direction: column;
           position: fixed; top: 0; left: 0; bottom: 0; width: 260px;
           overflow-y: auto; z-index: 10;
         }
-        .logo { font-size: 20px; font-weight: 700; color: var(--text); text-decoration: none; display: block; margin-bottom: 36px; letter-spacing: -0.02em; }
-        .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; margin-top: 20px; padding-left: 12px; }
-        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 2px; font-size: 13px; font-weight: 500; color: var(--text-muted); border: 1px solid transparent; border-radius: var(--r-sm); cursor: pointer; transition: all 0.2s; background: none; width: 100%; text-align: left; text-decoration: none; }
-        .nav-item:hover { color: var(--text); background: rgba(99,102,241,0.04); border-color: var(--border-s); }
-        .nav-item.active { color: var(--accent-light); background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.15); }
-        .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.5; flex-shrink: 0; }
-        .nav-item.active .nav-dot { opacity: 1; }
-        .sidebar-bottom { margin-top: auto; padding-top: 24px; }
-        .quota-box { background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.12); border-radius: var(--r-sm); padding: 16px; margin-bottom: 12px; }
-        .quota-plan { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 6px; }
-        .quota-num { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; }
-        .quota-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-        .quota-track { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 10px; }
-        .quota-fill { height: 3px; background: linear-gradient(to right, var(--accent), var(--cyan)); border-radius: 2px; transition: width 0.5s; }
-        .btn-logout { width: 100%; padding: 11px; background: transparent; border: 1px solid var(--border-s); border-radius: var(--r-sm); color: var(--text-dim); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s; }
-        .btn-logout:hover { color: var(--text-muted); border-color: rgba(255,255,255,0.12); }
+        .dash-logo { font-size: 20px; font-weight: 700; color: #080808; text-decoration: none; display: block; margin-bottom: 36px; letter-spacing: -0.02em; }
+        .dash-nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #9CA3AF; margin-bottom: 8px; margin-top: 20px; padding-left: 12px; }
+        .dash-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 2px; font-size: 13px; font-weight: 500; color: #6B7280; border: 1px solid transparent; border-radius: 10px; cursor: pointer; transition: all 0.2s; background: none; width: 100%; text-align: left; text-decoration: none; font-family: inherit; }
+        .dash-nav-item:hover { color: #080808; background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.06); }
+        .dash-nav-item.active { color: #FFFFFF; background: #080808; border-color: #080808; }
+        .dash-nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.5; flex-shrink: 0; }
+        .dash-nav-item.active .dash-nav-dot { opacity: 1; }
+        .dash-sidebar-bottom { margin-top: auto; padding-top: 24px; }
+        .dash-quota-box { background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+        .dash-quota-plan { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6B7280; margin-bottom: 6px; }
+        .dash-quota-num { font-size: 28px; font-weight: 700; color: #080808; line-height: 1; }
+        .dash-quota-sub { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+        .dash-quota-track { height: 3px; background: rgba(0,0,0,0.06); border-radius: 2px; margin-top: 10px; }
+        .dash-quota-fill { height: 3px; background: #080808; border-radius: 2px; transition: width 0.5s; }
+        .dash-btn-logout { width: 100%; padding: 11px; background: transparent; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; color: #9CA3AF; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s; }
+        .dash-btn-logout:hover { color: #6B7280; border-color: rgba(0,0,0,0.15); }
 
         /* MAIN */
-        .main { margin-left: 260px; padding: 48px 52px; min-height: 100vh; flex: 1; width: calc(100vw - 260px); max-width: 100%; }
-        .page-header { margin-bottom: 36px; }
-        .page-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 6px; }
-        .page-title { font-size: 40px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
-        .page-title em { font-style: normal; background: linear-gradient(135deg, var(--accent), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .dash-main { margin-left: 260px; padding: 48px 52px; min-height: 100vh; flex: 1; width: calc(100vw - 260px); max-width: 100%; }
+        .dash-page-header { margin-bottom: 36px; }
+        .dash-page-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.05em; color: #9CA3AF; margin-bottom: 6px; }
+        .dash-page-title { font-size: 40px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; color: #080808; }
 
         /* CARDS */
-        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 32px; margin-bottom: 16px; position: relative; width: 100%; backdrop-filter: blur(12px); }
-        .card-accent::before { content: ''; position: absolute; top: -1px; left: 32px; width: 60px; height: 2px; background: linear-gradient(to right, var(--accent), var(--cyan)); border-radius: 1px; }
-        .card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 18px; }
+        .dash-card { background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08); border-radius: 16px; padding: 32px; margin-bottom: 16px; position: relative; width: 100%; box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
+        .dash-card-accent::before { content: ''; position: absolute; top: -1px; left: 32px; width: 60px; height: 2px; background: #080808; border-radius: 1px; }
+        .dash-card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #6B7280; margin-bottom: 18px; }
 
         /* TEXTAREA */
-        .tts-textarea { width: 100%; height: 150px; resize: none; background: rgba(255,255,255,0.04); border: 1px solid var(--border-s); border-radius: var(--r-sm); padding: 16px 18px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.7; outline: none; transition: border-color 0.3s, box-shadow 0.3s; }
-        .tts-textarea:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-        .tts-textarea::placeholder { color: var(--text-dim); }
-        .char-row { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--text-dim); }
-        .char-row .warn { color: #ef4444; }
+        .dash-textarea { width: 100%; height: 150px; resize: none; background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 16px 18px; color: #080808; font-family: inherit; font-size: 15px; line-height: 1.7; outline: none; transition: border-color 0.3s, box-shadow 0.3s; }
+        .dash-textarea:focus { border-color: rgba(0,0,0,0.2); box-shadow: 0 0 0 3px rgba(0,0,0,0.04); }
+        .dash-textarea::placeholder { color: #9CA3AF; }
+        .dash-char-row { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #9CA3AF; }
+        .dash-char-row .warn { color: #ef4444; }
 
-        /* GRID LAYOUTS */
-        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; width: 100%; }
+        /* GRID */
+        .dash-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; width: 100%; }
 
         /* VOICE SELECTOR */
-        .voice-selector-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-bottom: 4px; }
-        .voice-chip { padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-s); border-radius: var(--r-sm); cursor: pointer; transition: all 0.2s; position: relative; }
-        .voice-chip:hover { border-color: rgba(99,102,241,0.25); background: rgba(99,102,241,0.04); }
-        .voice-chip.selected { border-color: var(--accent); background: rgba(99,102,241,0.1); }
-        .voice-chip-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
-        .voice-chip-meta { font-size: 11px; color: var(--text-dim); text-transform: uppercase; }
-        .voice-chip.selected .voice-chip-name { color: var(--accent-light); }
-        .voice-chip-check { position: absolute; top: 8px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: none; }
-        .voice-chip.selected .voice-chip-check { display: block; }
-        .no-voices-msg { font-size: 13px; color: var(--text-dim); padding: 16px 0; }
+        .dash-voice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-bottom: 4px; }
+        .dash-voice-chip { padding: 12px 14px; background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; cursor: pointer; transition: all 0.2s; position: relative; }
+        .dash-voice-chip:hover { border-color: rgba(0,0,0,0.2); background: rgba(0,0,0,0.01); }
+        .dash-voice-chip.selected { border-color: #080808; background: rgba(0,0,0,0.03); }
+        .dash-voice-chip-name { font-size: 13px; font-weight: 500; color: #080808; margin-bottom: 3px; }
+        .dash-voice-chip-meta { font-size: 11px; color: #9CA3AF; text-transform: uppercase; }
+        .dash-voice-chip.selected .dash-voice-chip-name { color: #080808; font-weight: 600; }
+        .dash-voice-chip-check { position: absolute; top: 8px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: #080808; display: none; }
+        .dash-voice-chip.selected .dash-voice-chip-check { display: block; }
+        .dash-no-voices { font-size: 13px; color: #9CA3AF; padding: 16px 0; }
 
         /* UPLOAD */
-        .upload-zone { border: 1px dashed rgba(99,102,241,0.25); border-radius: var(--r-sm); padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; }
-        .upload-zone:hover { border-color: rgba(99,102,241,0.5); background: rgba(99,102,241,0.03); }
-        .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .upload-zone-title { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 3px; }
-        .upload-zone-sub { font-size: 12px; color: var(--text-dim); }
-        .upload-zone-selected { font-size: 12px; font-weight: 600; color: var(--cyan); }
+        .dash-upload-zone { border: 1px dashed rgba(0,0,0,0.15); border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; }
+        .dash-upload-zone:hover { border-color: rgba(0,0,0,0.3); background: rgba(0,0,0,0.01); }
+        .dash-upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .dash-upload-title { font-size: 12px; font-weight: 500; color: #6B7280; margin-bottom: 3px; }
+        .dash-upload-sub { font-size: 12px; color: #9CA3AF; }
+        .dash-upload-selected { font-size: 12px; font-weight: 600; color: #080808; }
 
         /* SLIDERS */
-        .slider-row { display: flex; flex-direction: column; gap: 16px; }
-        .slider-label { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
-        .slider-label span { color: var(--accent-light); font-weight: 600; }
-        input[type=range] { width: 100%; height: 3px; -webkit-appearance: none; appearance: none; background: rgba(255,255,255,0.08); border-radius: 2px; outline: none; cursor: pointer; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 8px rgba(99,102,241,0.3); }
-        input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; border: none; }
+        .dash-slider-row { display: flex; flex-direction: column; gap: 16px; }
+        .dash-slider-label { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #6B7280; margin-bottom: 8px; }
+        .dash-slider-label span { color: #080808; font-weight: 600; }
+        input[type=range] { width: 100%; height: 3px; -webkit-appearance: none; appearance: none; background: rgba(0,0,0,0.08); border-radius: 2px; outline: none; cursor: pointer; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #080808; cursor: pointer; box-shadow: 0 0 8px rgba(0,0,0,0.15); }
+        input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #080808; cursor: pointer; border: none; }
 
         /* BUTTONS */
-        .gen-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent), #8b5cf6); color: #fff; border: none; border-radius: var(--r-sm); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-        .gen-btn:hover { box-shadow: 0 4px 20px rgba(99,102,241,0.35); transform: translateY(-1px); }
-        .gen-btn:disabled { background: rgba(255,255,255,0.06); color: var(--text-dim); cursor: not-allowed; transform: none; box-shadow: none; }
+        .dash-gen-btn { width: 100%; padding: 16px; background: #080808; color: #FFFFFF; border: none; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .dash-gen-btn:hover { transform: scale(1.02); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .dash-gen-btn:disabled { background: rgba(0,0,0,0.08); color: #9CA3AF; cursor: not-allowed; transform: none; box-shadow: none; }
 
         /* AUDIO */
-        .audio-card { background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.15); border-radius: var(--r-sm); padding: 24px; }
-        .audio-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 14px; }
+        .dash-audio-card { background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 24px; }
+        .dash-audio-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6B7280; margin-bottom: 14px; }
         audio { width: 100%; margin-bottom: 12px; }
-        .download-btn { font-size: 13px; font-weight: 500; color: var(--accent-light); text-decoration: none; transition: color 0.3s; }
-        .download-btn:hover { color: var(--cyan); }
-        .error-msg { font-size: 13px; color: #ef4444; margin-top: 12px; }
-        .success-msg { font-size: 13px; color: #22c55e; margin-top: 12px; }
+        .dash-download-btn { font-size: 13px; font-weight: 500; color: #080808; text-decoration: none; transition: color 0.3s; }
+        .dash-download-btn:hover { color: #6B7280; }
+        .dash-error-msg { font-size: 13px; color: #ef4444; margin-top: 12px; }
+        .dash-success-msg { font-size: 13px; color: #22c55e; margin-top: 12px; }
 
         /* CLONE TAB */
-        .clone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
-        .field { margin-bottom: 16px; }
-        .field-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; display: block; }
-        .field-input { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-s); border-radius: var(--r-sm); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: border-color 0.3s, box-shadow 0.3s; }
-        .field-input:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-        .field-input::placeholder { color: var(--text-dim); }
-        select.field-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(99,102,241,0.5)'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
-        select.field-input option { background: #12132a; }
-        .clone-upload-zone { border: 1px dashed rgba(99,102,241,0.25); border-radius: var(--r-sm); padding: 40px 24px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-        .clone-upload-zone:hover { border-color: rgba(99,102,241,0.5); background: rgba(99,102,241,0.03); }
-        .clone-upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .upload-icon-large { font-size: 32px; }
-        .clone-upload-title { font-size: 13px; font-weight: 500; color: var(--text-muted); }
-        .clone-upload-sub { font-size: 12px; color: var(--text-dim); }
-        .clone-upload-selected { font-size: 13px; font-weight: 600; color: var(--cyan); }
-        .requirements-list { list-style: none; margin-top: 12px; }
-        .requirements-list li { font-size: 11px; color: var(--text-dim); padding: 4px 0; border-bottom: 1px solid var(--border-s); display: flex; gap: 8px; align-items: center; }
-        .requirements-list li::before { content: '—'; color: var(--accent-light); }
+        .dash-clone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+        .dash-field { margin-bottom: 16px; }
+        .dash-field-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6B7280; margin-bottom: 8px; display: block; }
+        .dash-field-input { width: 100%; padding: 12px 16px; background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; color: #080808; font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.3s, box-shadow 0.3s; }
+        .dash-field-input:focus { border-color: rgba(0,0,0,0.2); box-shadow: 0 0 0 3px rgba(0,0,0,0.04); }
+        .dash-field-input::placeholder { color: #9CA3AF; }
+        select.dash-field-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(0,0,0,0.3)'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+        select.dash-field-input option { background: #FFFFFF; }
+        .dash-clone-upload { border: 1px dashed rgba(0,0,0,0.15); border-radius: 10px; padding: 40px 24px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+        .dash-clone-upload:hover { border-color: rgba(0,0,0,0.3); background: rgba(0,0,0,0.01); }
+        .dash-clone-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .dash-upload-icon { font-size: 32px; }
+        .dash-clone-upload-title { font-size: 13px; font-weight: 500; color: #6B7280; }
+        .dash-clone-upload-sub { font-size: 12px; color: #9CA3AF; }
+        .dash-clone-upload-selected { font-size: 13px; font-weight: 600; color: #080808; }
+        .dash-req-list { list-style: none; margin-top: 12px; }
+        .dash-req-list li { font-size: 11px; color: #9CA3AF; padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.06); display: flex; gap: 8px; align-items: center; }
+        .dash-req-list li::before { content: '—'; color: #080808; }
 
         /* LOCKED */
-        .locked-overlay { background: rgba(10,11,20,0.9); border: 1px solid rgba(99,102,241,0.15); border-radius: var(--r); padding: 24px; text-align: center; margin-bottom: 16px; }
-        .locked-title { font-size: 22px; font-weight: 700; color: var(--accent-light); margin-bottom: 6px; }
-        .locked-sub { font-size: 13px; color: var(--text-dim); }
-        .upgrade-link { display: inline-block; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--accent-light); text-decoration: none; border: 1px solid rgba(99,102,241,0.3); border-radius: var(--r-sm); padding: 8px 16px; transition: all 0.3s; }
-        .upgrade-link:hover { background: rgba(99,102,241,0.08); }
+        .dash-locked { background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.08); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 16px; }
+        .dash-locked-title { font-size: 22px; font-weight: 700; color: #080808; margin-bottom: 6px; }
+        .dash-locked-sub { font-size: 13px; color: #9CA3AF; }
+        .dash-upgrade-link { display: inline-block; margin-top: 12px; font-size: 13px; font-weight: 600; color: #FFFFFF; background: #080808; text-decoration: none; border: none; border-radius: 10px; padding: 10px 20px; transition: all 0.3s; }
+        .dash-upgrade-link:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
 
         /* VOICES TAB */
-        .voices-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-        .voice-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 24px; position: relative; transition: all 0.3s; backdrop-filter: blur(12px); }
-        .voice-card:hover { border-color: rgba(99,102,241,0.25); }
-        .voice-card-name { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
-        .voice-card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-        .voice-tag { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); background: rgba(255,255,255,0.04); border: 1px solid var(--border-s); border-radius: 4px; padding: 3px 8px; }
-        .voice-card-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 16px; }
-        .voice-card-actions { display: flex; gap: 8px; }
-        .btn-use { flex: 1; padding: 9px; background: linear-gradient(135deg, var(--accent), #8b5cf6); color: #fff; border: none; border-radius: var(--r-sm); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-        .btn-use:hover { box-shadow: 0 4px 16px rgba(99,102,241,0.3); }
-        .btn-delete { padding: 9px 12px; background: transparent; border: 1px solid var(--border-s); border-radius: var(--r-sm); color: var(--text-dim); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.3s; }
-        .btn-delete:hover { border-color: #ef4444; color: #ef4444; }
-        .empty-voices { grid-column: 1 / -1; padding: 60px; text-align: center; border: 1px dashed rgba(99,102,241,0.15); border-radius: var(--r); }
-        .empty-voices-title { font-size: 24px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
-        .empty-voices-sub { font-size: 13px; color: var(--text-dim); }
+        .dash-voices-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+        .dash-voice-card { background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08); border-radius: 16px; padding: 24px; position: relative; transition: all 0.3s; box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
+        .dash-voice-card:hover { border-color: rgba(0,0,0,0.15); box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+        .dash-voice-card-name { font-size: 20px; font-weight: 600; margin-bottom: 6px; color: #080808; }
+        .dash-voice-card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .dash-voice-tag { font-size: 10px; font-weight: 600; text-transform: uppercase; color: #6B7280; background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.08); border-radius: 4px; padding: 3px 8px; }
+        .dash-voice-card-desc { font-size: 13px; color: #9CA3AF; line-height: 1.5; margin-bottom: 16px; }
+        .dash-voice-card-actions { display: flex; gap: 8px; }
+        .dash-btn-use { flex: 1; padding: 9px; background: #080808; color: #FFFFFF; border: none; border-radius: 10px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .dash-btn-use:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+        .dash-btn-delete { padding: 9px 12px; background: transparent; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; color: #9CA3AF; font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.3s; }
+        .dash-btn-delete:hover { border-color: #ef4444; color: #ef4444; }
+        .dash-empty-voices { grid-column: 1 / -1; padding: 60px; text-align: center; border: 1px dashed rgba(0,0,0,0.1); border-radius: 16px; }
+        .dash-empty-voices-title { font-size: 24px; font-weight: 600; color: #6B7280; margin-bottom: 8px; }
+        .dash-empty-voices-sub { font-size: 13px; color: #9CA3AF; }
 
         /* API TAB */
-        .api-key-row { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
-        .api-key-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-        .api-key-value { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; color: var(--text-dim); word-break: break-all; }
-        .api-key-meta { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
-        .api-key-actions { display: flex; gap: 8px; flex-shrink: 0; }
-        .btn-copy { padding: 8px 14px; background: rgba(99,102,241,0.1); color: var(--accent-light); border: 1px solid rgba(99,102,241,0.2); border-radius: var(--r-sm); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.3s; white-space: nowrap; }
-        .btn-copy:hover { background: rgba(99,102,241,0.15); border-color: var(--accent); }
-        .btn-revoke { padding: 8px 14px; background: transparent; color: var(--text-dim); border: 1px solid var(--border-s); border-radius: var(--r-sm); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.3s; white-space: nowrap; }
-        .btn-revoke:hover { border-color: #ef4444; color: #ef4444; }
-        .code-block { background: #0d0e1a; border: 1px solid var(--border-s); border-radius: var(--r-sm); padding: 20px 24px; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; color: var(--text-muted); line-height: 1.9; overflow-x: auto; white-space: pre; }
-        .key-gen-row { display: flex; gap: 8px; }
+        .dash-api-key-row { background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
+        .dash-api-key-name { font-size: 14px; font-weight: 600; color: #080808; margin-bottom: 4px; }
+        .dash-api-key-value { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; color: #9CA3AF; word-break: break-all; }
+        .dash-api-key-meta { font-size: 11px; color: #9CA3AF; margin-top: 3px; }
+        .dash-api-key-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .dash-btn-copy { padding: 8px 14px; background: rgba(0,0,0,0.04); color: #080808; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.3s; white-space: nowrap; }
+        .dash-btn-copy:hover { background: rgba(0,0,0,0.08); border-color: rgba(0,0,0,0.15); }
+        .dash-btn-revoke { padding: 8px 14px; background: transparent; color: #9CA3AF; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.3s; white-space: nowrap; }
+        .dash-btn-revoke:hover { border-color: #ef4444; color: #ef4444; }
+        .dash-code-block { background: #F9FAFB; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 20px 24px; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; color: #4B5563; line-height: 1.9; overflow-x: auto; white-space: pre; }
+        .dash-key-gen-row { display: flex; gap: 8px; }
 
         /* RESPONSIVE */
         @media (max-width: 900px) {
-          .sidebar { position: relative; width: 100%; height: auto; bottom: auto; }
-          .main { margin-left: 0; padding: 24px; width: 100%; }
-          .two-col, .clone-grid, .key-gen-row { grid-template-columns: 1fr; flex-direction: column; }
+          .dash-sidebar { position: relative; width: 100%; height: auto; bottom: auto; }
+          .dash-main { margin-left: 0; padding: 24px; width: 100%; }
+          .dash-two-col, .dash-clone-grid, .dash-key-gen-row { grid-template-columns: 1fr; flex-direction: column; }
         }
       `}</style>
 
-      <div className="layout">
-        <aside className="sidebar">
-          <a href="/" className="logo">Soviron</a>
+      <div className="dash-layout">
+        <aside className="dash-sidebar">
+          <a href="/" className="dash-logo">Soviron</a>
 
-          <p className="nav-label">Studio</p>
-          <button className={`nav-item ${tab === 'generate' ? 'active' : ''}`} onClick={() => setTab('generate')}>
-            <span className="nav-dot" />Generate Speech
+          <p className="dash-nav-label">Studio</p>
+          <button className={`dash-nav-item ${tab === 'generate' ? 'active' : ''}`} onClick={() => setTab('generate')}>
+            <span className="dash-nav-dot" />Generate Speech
           </button>
-          <button className={`nav-item ${tab === 'clone' ? 'active' : ''}`} onClick={() => setTab('clone')}>
-            <span className="nav-dot" />Clone a Voice
+          <button className={`dash-nav-item ${tab === 'clone' ? 'active' : ''}`} onClick={() => setTab('clone')}>
+            <span className="dash-nav-dot" />Clone a Voice
           </button>
-          <button className={`nav-item ${tab === 'voices' ? 'active' : ''}`} onClick={() => setTab('voices')}>
-            <span className="nav-dot" />My Voices {voices.length > 0 && `(${voices.length})`}
-          </button>
-
-          <p className="nav-label">Developer</p>
-          <button className={`nav-item ${tab === 'api' ? 'active' : ''}`} onClick={() => setTab('api')}>
-            <span className="nav-dot" />API Access
+          <button className={`dash-nav-item ${tab === 'voices' ? 'active' : ''}`} onClick={() => setTab('voices')}>
+            <span className="dash-nav-dot" />My Voices {voices.length > 0 && `(${voices.length})`}
           </button>
 
-          <p className="nav-label">Account</p>
-          <a className="nav-item" href="/pricing">Upgrade Plan</a>
+          <p className="dash-nav-label">Developer</p>
+          <button className={`dash-nav-item ${tab === 'api' ? 'active' : ''}`} onClick={() => setTab('api')}>
+            <span className="dash-nav-dot" />API Access
+          </button>
 
-          <div className="sidebar-bottom">
-            <div className="quota-box">
-              <p className="quota-plan">{profile?.plan || 'free'} plan</p>
-              <p className="quota-num">{charsRemaining.toLocaleString()}</p>
-              <p className="quota-sub">characters remaining</p>
-              <div className="quota-track">
-                <div className="quota-fill" style={{ width: `${charsPercent}%` }} />
+          <p className="dash-nav-label">Account</p>
+          <a className="dash-nav-item" href="/pricing">Upgrade Plan</a>
+
+          <div className="dash-sidebar-bottom">
+            <div className="dash-quota-box">
+              <p className="dash-quota-plan">{profile?.plan || 'free'} plan</p>
+              <p className="dash-quota-num">{charsRemaining.toLocaleString()}</p>
+              <p className="dash-quota-sub">characters remaining</p>
+              <div className="dash-quota-track">
+                <div className="dash-quota-fill" style={{ width: `${charsPercent}%` }} />
               </div>
             </div>
-            <button className="btn-logout" onClick={handleLogout}>Sign Out</button>
+            <button className="dash-btn-logout" onClick={handleLogout}>Sign Out</button>
           </div>
         </aside>
 
-        <main className="main">
+        <main className="dash-main">
 
           {/* ── GENERATE TAB ── */}
           {tab === 'generate' && (
             <>
-              <div className="page-header">
-                <p className="page-eyebrow">Welcome back, {user?.email?.split('@')[0]}</p>
-                <h1 className="page-title">Generate <em>Speech</em></h1>
+              <div className="dash-page-header">
+                <p className="dash-page-eyebrow">Welcome back, {user?.email?.split('@')[0]}</p>
+                <h1 className="dash-page-title">Generate Speech</h1>
               </div>
-              <div className="two-col">
+              <div className="dash-two-col">
                 <div>
-                  <div className="card card-accent" style={{ marginBottom: 16 }}>
-                    <p className="card-title">01 — Your Text</p>
-                    <textarea className="tts-textarea" placeholder="Type or paste the text you want to convert to speech..." value={text} onChange={e => setText(e.target.value)} />
-                    <div className="char-row">
+                  <div className="dash-card dash-card-accent" style={{ marginBottom: 16 }}>
+                    <p className="dash-card-title">01 — Your Text</p>
+                    <textarea className="dash-textarea" placeholder="Type or paste the text you want to convert to speech..." value={text} onChange={e => setText(e.target.value)} />
+                    <div className="dash-char-row">
                       <span className={text.length > charsRemaining ? 'warn' : ''}>{text.length} typed</span>
                       <span>{charsRemaining.toLocaleString()} remaining</span>
                     </div>
                   </div>
-                  <div className="card" style={{ marginBottom: 16 }}>
-                    <p className="card-title">02 — Select Voice</p>
+                  <div className="dash-card" style={{ marginBottom: 16 }}>
+                    <p className="dash-card-title">02 — Select Voice</p>
                     {voices.length > 0 ? (
                       <>
-                        <div className="voice-selector-grid">
+                        <div className="dash-voice-grid">
                           {voices.map(v => (
-                            <div key={v.id} className={`voice-chip ${selectedVoice?.id === v.id ? 'selected' : ''}`} onClick={() => setSelectedVoice(selectedVoice?.id === v.id ? null : v)}>
-                              <div className="voice-chip-check" />
-                              <p className="voice-chip-name">{v.name}</p>
-                              <p className="voice-chip-meta">{v.language} · {v.gender}</p>
+                            <div key={v.id} className={`dash-voice-chip ${selectedVoice?.id === v.id ? 'selected' : ''}`} onClick={() => setSelectedVoice(selectedVoice?.id === v.id ? null : v)}>
+                              <div className="dash-voice-chip-check" />
+                              <p className="dash-voice-chip-name">{v.name}</p>
+                              <p className="dash-voice-chip-meta">{v.language} · {v.gender}</p>
                             </div>
                           ))}
                         </div>
-                        <p style={{ fontSize: 11, fontWeight: 500, color: '#64748b', marginTop: 8 }}>OR UPLOAD FOR THIS SESSION ONLY</p>
+                        <p style={{ fontSize: 11, fontWeight: 500, color: '#9CA3AF', marginTop: 8 }}>OR UPLOAD FOR THIS SESSION ONLY</p>
                       </>
                     ) : (
-                      <p className="no-voices-msg">No saved voices yet. {isPaid ? 'Clone a voice first.' : 'Upgrade to save voices.'}</p>
+                      <p className="dash-no-voices">No saved voices yet. {isPaid ? 'Clone a voice first.' : 'Upgrade to save voices.'}</p>
                     )}
-                    <div className="upload-zone" style={{ marginTop: 12 }}>
+                    <div className="dash-upload-zone" style={{ marginTop: 12 }}>
                       <input ref={sessionInputRef} type="file" accept="audio/*" onChange={e => { const f = e.target.files?.[0]; if (f) { setSessionVoiceFile(f); setSessionVoiceFileName(f.name); setSelectedVoice(null); } }} />
-                      {sessionVoiceFileName ? <p className="upload-zone-selected">✓ {sessionVoiceFileName}</p> : (<><p className="upload-zone-title">Upload voice sample</p><p className="upload-zone-sub">MP3, WAV · 10–30 seconds</p></>)}
+                      {sessionVoiceFileName ? <p className="dash-upload-selected">✓ {sessionVoiceFileName}</p> : (<><p className="dash-upload-title">Upload voice sample</p><p className="dash-upload-sub">MP3, WAV · 10–30 seconds</p></>)}
                     </div>
                   </div>
                 </div>
                 <div>
-                  <div className="card" style={{ marginBottom: 16 }}>
-                    <p className="card-title">03 — Voice Settings</p>
-                    <div className="slider-row">
+                  <div className="dash-card" style={{ marginBottom: 16 }}>
+                    <p className="dash-card-title">03 — Voice Settings</p>
+                    <div className="dash-slider-row">
                       <div>
-                        <div className="slider-label">Speed <span>{speed.toFixed(1)}x</span></div>
+                        <div className="dash-slider-label">Speed <span>{speed.toFixed(1)}x</span></div>
                         <input type="range" min="0.5" max="2" step="0.1" value={speed} onChange={e => setSpeed(parseFloat(e.target.value))} />
                       </div>
                       <div>
-                        <div className="slider-label">Pitch <span>{pitch > 0 ? `+${pitch}` : pitch}</span></div>
+                        <div className="dash-slider-label">Pitch <span>{pitch > 0 ? `+${pitch}` : pitch}</span></div>
                         <input type="range" min="-10" max="10" step="1" value={pitch} onChange={e => setPitch(parseInt(e.target.value))} />
                       </div>
                       <div style={{ marginBottom: 16 }}>
-                        <div className="slider-label">Output Format <span style={{ textTransform: 'uppercase' }}>{format}</span></div>
+                        <div className="dash-slider-label">Output Format <span style={{ textTransform: 'uppercase' }}>{format}</span></div>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
                           {['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a'].map(f => (
                             <button key={f} onClick={() => setFormat(f)} style={{
-                              padding: '6px 14px', fontFamily: 'Inter,sans-serif', fontSize: 12,
+                              padding: '6px 14px', fontFamily: 'inherit', fontSize: 12,
                               fontWeight: 500, textTransform: 'uppercase', cursor: 'pointer',
-                              border: format === f ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.06)',
-                              background: format === f ? 'rgba(99,102,241,0.15)' : 'transparent',
-                              color: format === f ? '#818cf8' : '#94a3b8',
+                              border: format === f ? '1px solid #080808' : '1px solid rgba(0,0,0,0.08)',
+                              background: format === f ? 'rgba(0,0,0,0.06)' : 'transparent',
+                              color: format === f ? '#080808' : '#6B7280',
                               borderRadius: 8, transition: 'all 0.2s'
                             }}>{f}</button>
                           ))}
@@ -567,19 +557,19 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="card card-accent">
-                    <p className="card-title">04 — Generate</p>
-                    <button className="gen-btn" onClick={handleGenerate} disabled={generating || !text.trim()}>
+                  <div className="dash-card dash-card-accent">
+                    <p className="dash-card-title">04 — Generate</p>
+                    <button className="dash-gen-btn" onClick={handleGenerate} disabled={generating || !text.trim()}>
                       {generating ? 'Generating...' : 'Generate Speech →'}
                     </button>
-                    {generating && genStatus && <p style={{ fontSize: 13, color: '#94a3b8', marginTop: 12, lineHeight: 1.6 }}>{genStatus}</p>}
-                    {genError && <p className="error-msg">{genError}</p>}
+                    {generating && genStatus && <p style={{ fontSize: 13, color: '#6B7280', marginTop: 12, lineHeight: 1.6 }}>{genStatus}</p>}
+                    {genError && <p className="dash-error-msg">{genError}</p>}
                   </div>
                   {audioUrl && (
-                    <div className="audio-card" style={{ marginTop: 16 }}>
-                      <p className="audio-label">Generated Audio</p>
+                    <div className="dash-audio-card" style={{ marginTop: 16 }}>
+                      <p className="dash-audio-label">Generated Audio</p>
                       <audio controls src={audioUrl} />
-                      <a href={audioUrl} download={`soviron-output.${format}`} className="download-btn">↓ Download {format.toUpperCase()}</a>
+                      <a href={audioUrl} download={`soviron-output.${format}`} className="dash-download-btn">↓ Download {format.toUpperCase()}</a>
                     </div>
                   )}
                 </div>
@@ -590,70 +580,70 @@ export default function Dashboard() {
           {/* ── CLONE TAB ── */}
           {tab === 'clone' && (
             <>
-              <div className="page-header">
-                <p className="page-eyebrow">Studio</p>
-                <h1 className="page-title">Clone a <em>Voice</em></h1>
+              <div className="dash-page-header">
+                <p className="dash-page-eyebrow">Studio</p>
+                <h1 className="dash-page-title">Clone a Voice</h1>
               </div>
               {!isPaid && (
-                <div className="locked-overlay">
-                  <p className="locked-title">Paid Feature</p>
-                  <p className="locked-sub">Voice saving is available on paid plans. Free users can still upload a sample per session.</p>
-                  <a href="/pricing" className="upgrade-link">Upgrade from ₹79 →</a>
+                <div className="dash-locked">
+                  <p className="dash-locked-title">Paid Feature</p>
+                  <p className="dash-locked-sub">Voice saving is available on paid plans. Free users can still upload a sample per session.</p>
+                  <a href="/pricing" className="dash-upgrade-link">Upgrade from ₹79 →</a>
                 </div>
               )}
-              <div className="clone-grid" style={{ opacity: isPaid ? 1 : 0.4, pointerEvents: isPaid ? 'auto' : 'none' }}>
+              <div className="dash-clone-grid" style={{ opacity: isPaid ? 1 : 0.4, pointerEvents: isPaid ? 'auto' : 'none' }}>
                 <div>
-                  <div className="card card-accent" style={{ marginBottom: 16 }}>
-                    <p className="card-title">Voice Details</p>
-                    <div className="field">
-                      <label className="field-label">Voice Name *</label>
-                      <input className="field-input" placeholder="e.g. My Podcast Voice" value={cloneName} onChange={e => setCloneName(e.target.value)} />
+                  <div className="dash-card dash-card-accent" style={{ marginBottom: 16 }}>
+                    <p className="dash-card-title">Voice Details</p>
+                    <div className="dash-field">
+                      <label className="dash-field-label">Voice Name *</label>
+                      <input className="dash-field-input" placeholder="e.g. My Podcast Voice" value={cloneName} onChange={e => setCloneName(e.target.value)} />
                     </div>
-                    <div className="field">
-                      <label className="field-label">Language *</label>
-                      <select className="field-input" value={cloneLanguage} onChange={e => setCloneLanguage(e.target.value)}>
+                    <div className="dash-field">
+                      <label className="dash-field-label">Language *</label>
+                      <select className="dash-field-input" value={cloneLanguage} onChange={e => setCloneLanguage(e.target.value)}>
                         <option>Hindi</option><option>English</option><option>Marathi</option>
                         <option>Tamil</option><option>Telugu</option><option>Bengali</option>
                         <option>Kannada</option><option>Gujarati</option><option>Punjabi</option>
                         <option>Malayalam</option><option>Odia</option><option>Urdu</option><option>Other</option>
                       </select>
                     </div>
-                    <div className="field">
-                      <label className="field-label">Gender</label>
-                      <select className="field-input" value={cloneGender} onChange={e => setCloneGender(e.target.value)}>
+                    <div className="dash-field">
+                      <label className="dash-field-label">Gender</label>
+                      <select className="dash-field-input" value={cloneGender} onChange={e => setCloneGender(e.target.value)}>
                         <option>Male</option><option>Female</option><option>Neutral</option>
                       </select>
                     </div>
-                    <div className="field">
-                      <label className="field-label">Description (optional)</label>
-                      <input className="field-input" placeholder="e.g. Deep and calm, news anchor tone" value={cloneDescription} onChange={e => setCloneDescription(e.target.value)} />
+                    <div className="dash-field">
+                      <label className="dash-field-label">Description (optional)</label>
+                      <input className="dash-field-input" placeholder="e.g. Deep and calm, news anchor tone" value={cloneDescription} onChange={e => setCloneDescription(e.target.value)} />
                     </div>
                   </div>
-                  <div className="card" style={{ marginBottom: 16 }}>
-                    <p className="card-title">Preview Text (optional)</p>
-                    <input className="field-input" style={{ width: '100%' }} placeholder="Enter text to test this voice after saving..." value={clonePreviewText} onChange={e => setClonePreviewText(e.target.value)} />
+                  <div className="dash-card" style={{ marginBottom: 16 }}>
+                    <p className="dash-card-title">Preview Text (optional)</p>
+                    <input className="dash-field-input" style={{ width: '100%' }} placeholder="Enter text to test this voice after saving..." value={clonePreviewText} onChange={e => setClonePreviewText(e.target.value)} />
                   </div>
                 </div>
                 <div>
-                  <div className="card" style={{ marginBottom: 2 }}>
-                    <p className="card-title">Upload Voice Sample</p>
-                    <div className="clone-upload-zone">
+                  <div className="dash-card" style={{ marginBottom: 2 }}>
+                    <p className="dash-card-title">Upload Voice Sample</p>
+                    <div className="dash-clone-upload">
                       <input ref={cloneInputRef} type="file" accept="audio/*" onChange={e => { const f = e.target.files?.[0]; if (f) { setCloneFile(f); setCloneFileName(f.name); } }} />
-                      {cloneFileName ? <p className="clone-upload-selected">✓ {cloneFileName}</p> : (<><div className="upload-icon-large">🎤</div><p className="clone-upload-title">Drop file or click to upload</p><p className="clone-upload-sub">MP3, WAV, M4A · up to 20MB</p></>)}
+                      {cloneFileName ? <p className="dash-clone-upload-selected">✓ {cloneFileName}</p> : (<><div className="dash-upload-icon">🎤</div><p className="dash-clone-upload-title">Drop file or click to upload</p><p className="dash-clone-upload-sub">MP3, WAV, M4A · up to 20MB</p></>)}
                     </div>
-                    <ul className="requirements-list" style={{ marginTop: 16 }}>
+                    <ul className="dash-req-list" style={{ marginTop: 16 }}>
                       <li>Minimum 10 seconds, 30+ recommended</li>
                       <li>Only one speaker in the audio</li>
                       <li>No background music or noise</li>
                       <li>Speak clearly and naturally</li>
                     </ul>
                   </div>
-                  <div className="card card-accent">
-                    <button className="gen-btn" onClick={handleSaveVoice} disabled={cloneSaving || !cloneFile || !cloneName.trim()}>
+                  <div className="dash-card dash-card-accent">
+                    <button className="dash-gen-btn" onClick={handleSaveVoice} disabled={cloneSaving || !cloneFile || !cloneName.trim()}>
                       {cloneSaving ? 'Saving Voice...' : 'Save Voice Clone →'}
                     </button>
-                    {cloneError && <p className="error-msg">{cloneError}</p>}
-                    {cloneSuccess && <p className="success-msg">✓ Voice saved successfully!</p>}
+                    {cloneError && <p className="dash-error-msg">{cloneError}</p>}
+                    {cloneSuccess && <p className="dash-success-msg">✓ Voice saved successfully!</p>}
                   </div>
                 </div>
               </div>
@@ -663,27 +653,27 @@ export default function Dashboard() {
           {/* ── VOICES TAB ── */}
           {tab === 'voices' && (
             <>
-              <div className="page-header">
-                <p className="page-eyebrow">Studio</p>
-                <h1 className="page-title">My <em>Voices</em></h1>
+              <div className="dash-page-header">
+                <p className="dash-page-eyebrow">Studio</p>
+                <h1 className="dash-page-title">My Voices</h1>
               </div>
-              <div className="voices-grid">
+              <div className="dash-voices-grid">
                 {voices.length === 0 ? (
-                  <div className="empty-voices">
-                    <p className="empty-voices-title">No voices saved yet</p>
-                    <p className="empty-voices-sub">Clone your first voice to see it here</p>
+                  <div className="dash-empty-voices">
+                    <p className="dash-empty-voices-title">No voices saved yet</p>
+                    <p className="dash-empty-voices-sub">Clone your first voice to see it here</p>
                   </div>
                 ) : voices.map(v => (
-                  <div key={v.id} className="voice-card">
-                    <p className="voice-card-name">{v.name}</p>
-                    <div className="voice-card-tags">
-                      <span className="voice-tag">{v.language}</span>
-                      <span className="voice-tag">{v.gender}</span>
+                  <div key={v.id} className="dash-voice-card">
+                    <p className="dash-voice-card-name">{v.name}</p>
+                    <div className="dash-voice-card-tags">
+                      <span className="dash-voice-tag">{v.language}</span>
+                      <span className="dash-voice-tag">{v.gender}</span>
                     </div>
-                    {v.description && <p className="voice-card-desc">{v.description}</p>}
-                    <div className="voice-card-actions">
-                      <button className="btn-use" onClick={() => { setSelectedVoice(v); setTab('generate'); }}>Use Voice</button>
-                      <button className="btn-delete" onClick={() => handleDeleteVoice(v.id)}>Delete</button>
+                    {v.description && <p className="dash-voice-card-desc">{v.description}</p>}
+                    <div className="dash-voice-card-actions">
+                      <button className="dash-btn-use" onClick={() => { setSelectedVoice(v); setTab('generate'); }}>Use Voice</button>
+                      <button className="dash-btn-delete" onClick={() => handleDeleteVoice(v.id)}>Delete</button>
                     </div>
                   </div>
                 ))}
@@ -694,31 +684,31 @@ export default function Dashboard() {
           {/* ── API TAB ── */}
           {tab === 'api' && (
             <>
-              <div className="page-header">
-                <p className="page-eyebrow">Developer</p>
-                <h1 className="page-title">API <em>Access</em></h1>
+              <div className="dash-page-header">
+                <p className="dash-page-eyebrow">Developer</p>
+                <h1 className="dash-page-title">API Access</h1>
               </div>
 
               {!isApiPlan ? (
-                <div className="locked-overlay">
-                  <p className="locked-title">Creator Plan Required</p>
-                  <p className="locked-sub">API access is available on Creator, Pro, and Studio plans.</p>
-                  <a href="/pricing" className="upgrade-link">Upgrade from ₹349 →</a>
+                <div className="dash-locked">
+                  <p className="dash-locked-title">Creator Plan Required</p>
+                  <p className="dash-locked-sub">API access is available on Creator, Pro, and Studio plans.</p>
+                  <a href="/pricing" className="dash-upgrade-link">Upgrade from ₹349 →</a>
                 </div>
               ) : (
                 <>
-                  <div className="card card-accent" style={{ marginBottom: 16 }}>
-                    <p className="card-title">Generate API Key</p>
-                    <div className="key-gen-row">
+                  <div className="dash-card dash-card-accent" style={{ marginBottom: 16 }}>
+                    <p className="dash-card-title">Generate API Key</p>
+                    <div className="dash-key-gen-row">
                       <input
-                        className="field-input"
+                        className="dash-field-input"
                         style={{ flex: 1 }}
                         placeholder="Key name (e.g. Production, Testing)"
                         value={apiKeyName}
                         onChange={e => setApiKeyName(e.target.value)}
                       />
                       <button
-                        className="gen-btn"
+                        className="dash-gen-btn"
                         style={{ width: 'auto', padding: '13px 24px' }}
                         onClick={handleGenerateKey}
                         disabled={apiLoading}
@@ -726,45 +716,45 @@ export default function Dashboard() {
                         {apiLoading ? 'Generating...' : 'Generate Key →'}
                       </button>
                     </div>
-                    {apiError && <p className="error-msg">{apiError}</p>}
+                    {apiError && <p className="dash-error-msg">{apiError}</p>}
                   </div>
 
                   {apiKeys.filter(k => k.is_active).length > 0 && (
-                    <div className="card" style={{ marginBottom: 16 }}>
-                      <p className="card-title">Your API Keys</p>
+                    <div className="dash-card" style={{ marginBottom: 16 }}>
+                      <p className="dash-card-title">Your API Keys</p>
                       {apiKeys.filter(k => k.is_active).map(k => (
-                        <div key={k.id} className="api-key-row">
+                        <div key={k.id} className="dash-api-key-row">
                           <div style={{ minWidth: 0 }}>
-                            <p className="api-key-name">{k.name}</p>
-                            <p className="api-key-value">{k.key}</p>
-                            <p className="api-key-meta">
+                            <p className="dash-api-key-name">{k.name}</p>
+                            <p className="dash-api-key-value">{k.key}</p>
+                            <p className="dash-api-key-meta">
                               Created {new Date(k.created_at).toLocaleDateString()}
                               {k.last_used && ` · Last used ${new Date(k.last_used).toLocaleDateString()}`}
                             </p>
                           </div>
-                          <div className="api-key-actions">
-                            <button className="btn-copy" onClick={() => copyToClipboard(k.key)}>
+                          <div className="dash-api-key-actions">
+                            <button className="dash-btn-copy" onClick={() => copyToClipboard(k.key)}>
                               {copiedKey === k.key ? '✓ Copied' : 'Copy'}
                             </button>
-                            <button className="btn-revoke" onClick={() => handleRevokeKey(k.id)}>Revoke</button>
+                            <button className="dash-btn-revoke" onClick={() => handleRevokeKey(k.id)}>Revoke</button>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
 
-                  <div className="card" style={{ marginBottom: 16 }}>
-                    <p className="card-title">Usage Example</p>
-                    <div className="code-block">{`curl -X POST https://soviron.vercel.app/api/tts \\
+                  <div className="dash-card" style={{ marginBottom: 16 }}>
+                    <p className="dash-card-title">Usage Example</p>
+                    <div className="dash-code-block">{`curl -X POST https://soviron.vercel.app/api/tts \\
   -H "x-api-key: YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"text": "Hello from Soviron API", "speed": 1.0, "pitch": 0}' \\
   --output speech.wav`}</div>
                   </div>
 
-                  <div className="card">
-                    <p className="card-title">Parameters</p>
-                    <div className="code-block">{`text        string   required   Text to convert (max 50,000 chars)
+                  <div className="dash-card">
+                    <p className="dash-card-title">Parameters</p>
+                    <div className="dash-code-block">{`text        string   required   Text to convert (max 50,000 chars)
 speed       number   optional   Playback speed: 0.5 – 2.0 (default: 1.0)
 pitch       number   optional   Pitch shift: -10 to +10 (default: 0)
 
