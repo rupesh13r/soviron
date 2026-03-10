@@ -1,183 +1,179 @@
 "use client";
 import { motion } from "framer-motion";
-import { Play, Pause, Mic, Wand2 } from "lucide-react";
+import { Play, Pause, Mic } from "lucide-react";
 import { useState } from "react";
 
-const voiceSamples = [
-  { id: 1, name: "Sarah", accent: "American", color: "from-blue-50 to-blue-100" },
-  { id: 2, name: "James", accent: "British", color: "from-emerald-50 to-emerald-100" },
-  { id: 3, name: "Maria", accent: "Spanish", color: "from-amber-50 to-amber-100" },
-  { id: 4, name: "Yuki", accent: "Japanese", color: "from-rose-50 to-rose-100" },
-  { id: 5, name: "Hans", accent: "German", color: "from-purple-50 to-purple-100" },
-  { id: 6, name: "Sophie", accent: "French", color: "from-pink-50 to-pink-100" },
+const voices = [
+  { id: 1, name: "Sarah", accent: "American" },
+  { id: 2, name: "James", accent: "British" },
+  { id: 3, name: "Maria", accent: "Spanish" },
+  { id: 4, name: "Yuki", accent: "Japanese" },
+  { id: 5, name: "Hans", accent: "German" },
+  { id: 6, name: "Sophie", accent: "French" },
 ];
 
 export function VoiceCloneDemo() {
   const [selectedVoice, setSelectedVoice] = useState(1);
-  const [inputText, setInputText] = useState("Hello, I'm an AI-generated voice clone created by Soviron.");
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [playingOriginal, setPlayingOriginal] = useState(false);
+  const [playingClone, setPlayingClone] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleGenerate = () => {
-    setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setIsPlaying(true);
-      setTimeout(() => setIsPlaying(false), 3000);
-    }, 2000);
+  const handleClonePlay = () => {
+    if (!playingClone) {
+      setIsProcessing(true);
+      setTimeout(() => {
+        setIsProcessing(false);
+        setPlayingClone(true);
+        setTimeout(() => setPlayingClone(false), 3000);
+      }, 1500);
+    } else {
+      setPlayingClone(false);
+    }
   };
 
   return (
     <section id="demo" className="relative py-32 px-6 bg-gradient-to-b from-white via-gray-50 to-white">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="mb-12"
         >
-          <h2 className="text-6xl md:text-7xl font-bold mb-6 text-black tracking-tight">
-            Try it yourself
+          <h2 className="text-5xl md:text-6xl font-bold text-black tracking-tight mb-4">
+            Hear the difference
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Select a voice, type your text, and hear it come to life instantly.
-          </p>
+          <p className="text-xl text-gray-500">
+            Upload a voice. Clone it. Compare side by side.
+          p>
         </motion.div>
 
+        {/* Voice pills */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="flex flex-wrap gap-2 mb-8"
+        >
+          {voices.map((voice) => (
+            <button
+              key={voice.id}
+              onClick={() => setSelectedVoice(voice.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                selectedVoice === voice.id
+                  ? "bg-black text-white shadow-lg"
+                  : "bg-white border border-black/10 text-gray-600 hover:border-black/30"
+              }`}
+            >
+              <Mic className="w-3 h-3" />
+              {voice.name}
+              <span className={`text-xs ${selectedVoice === voice.id ? "text-gray-400" : "text-gray-400"}`}>
+                {voice.accent}
+              </span>
+            </button>
+          ))}
+        </motion.div>
+
+        {/* Two panels */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="relative"
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="grid grid-cols-2 gap-4"
         >
+          {/* Original */}
           <div
-            className="rounded-3xl bg-white border border-black/10 p-10 shadow-2xl"
-            style={{ boxShadow: "0 50px 120px rgba(0,0,0,0.12), inset 0 0 0 1px rgba(255,255,255,0.8)" }}
+            className="relative rounded-2xl bg-gray-100 border border-black/5 overflow-hidden"
+            style={{ minHeight: "280px" }}
           >
-            {/* Voice samples grid */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-black mb-4">Select a voice</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {voiceSamples.map((voice) => (
-                  <motion.button
-                    key={voice.id}
-                    onClick={() => setSelectedVoice(voice.id)}
-                    whileHover={{ scale: 1.05, y: -4 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`relative p-6 rounded-2xl border-2 transition-all ${
-                      selectedVoice === voice.id
-                        ? "border-black bg-gradient-to-br from-gray-50 to-white"
-                        : "border-black/10 bg-white hover:border-black/30"
-                    }`}
-                    style={{
-                      boxShadow: selectedVoice === voice.id
-                        ? "0 20px 40px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)"
-                        : "0 10px 20px rgba(0,0,0,0.05)",
-                    }}
-                  >
-                    <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br ${voice.color} flex items-center justify-center shadow-lg`}>
-                      <Mic className="w-7 h-7 text-gray-700" />
-                    </div>
-                    <div className="text-center">
-                      <div className="font-semibold text-black">{voice.name}</div>
-                      <div className="text-xs text-gray-500 mt-1">{voice.accent}</div>
-                    </div>
-                    {selectedVoice === voice.id && (
-                      <div className="flex gap-0.5 justify-center mt-3 h-6 items-end">
-                        {[...Array(12)].map((_, i) => (
-                          <motion.div
-                            key={i}
-                            className="w-1 bg-black rounded-full"
-                            animate={{ height: ["30%", "100%", "30%"] }}
-                            transition={{ duration: 1, repeat: Infinity, delay: i * 0.1 }}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </motion.button>
-                ))}
+            <div className="absolute inset-0 flex flex-col justify-between p-6">
+              <div className="text-xs text-gray-400 font-medium uppercase tracking-widest">Original</div>
+              
+              {/* Waveform */}
+              <div className="flex gap-0.5 h-20 items-end justify-center">
+                {[...Array(40)].map((_, i) => {
+                  const h = Math.sin(i * 0.3) * 30 + 40;
+                  return (
+                    <motion.div
+                      key={i}
+                      className="flex-1 rounded-t-sm bg-gray-300 max-w-[4px]"
+                      animate={playingOriginal ? { height: [`${h}%`, `${h + 25}%`, `${h}%`] } : { height: `${h}%` }}
+                      transition={{ duration: 0.8, repeat: playingOriginal ? Infinity : 0, delay: i * 0.02 }}
+                    />
+                  );
+                })}
               </div>
-            </div>
 
-            {/* Text input */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-black mb-4">Enter your text</h3>
-              <div className="relative">
-                <textarea
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  rows={4}
-                  className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-black/10 focus:border-black/30 focus:outline-none resize-none text-black placeholder:text-gray-400 shadow-inner"
-                  placeholder="Type or paste any text here..."
-                  style={{ boxShadow: "inset 0 2px 8px rgba(0,0,0,0.04)" }}
-                />
-                <div className="absolute bottom-4 right-4 text-xs text-gray-400">
-                  {inputText.length} characters
-                </div>
-              </div>
-            </div>
-
-            {/* Generate button */}
-            <div className="flex justify-center mb-8">
-              <motion.button
-                onClick={handleGenerate}
-                disabled={isProcessing}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-12 py-5 bg-black text-white rounded-2xl font-semibold text-lg flex items-center gap-3 shadow-2xl shadow-black/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              <button
+                onClick={() => { setPlayingOriginal(!playingOriginal); }}
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
               >
-                <Wand2 className="w-5 h-5" />
-                {isProcessing ? "Generating..." : "Generate Voice"}
-              </motion.button>
+                <div className="w-8 h-8 rounded-full bg-white border border-black/10 flex items-center justify-center shadow-sm">
+                  {playingOriginal ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 ml-0.5" />}
+                </div>
+                Preview Original
+              </button>
             </div>
+          </div>
 
-            {/* Output visualization */}
-            <div
-              className="rounded-2xl bg-gradient-to-br from-gray-50 to-white border border-black/10 p-8"
-              style={{ boxShadow: "inset 0 2px 12px rgba(0,0,0,0.04), 0 1px 0 rgba(255,255,255,0.8)" }}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-black">Generated output</h3>
-                <button
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  disabled={!isPlaying && !isProcessing}
-                  className="w-14 h-14 rounded-xl bg-black text-white flex items-center justify-center hover:scale-105 transition-transform shadow-lg shadow-black/20 disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
-                </button>
+          {/* Clone */}
+          <div
+            className="relative rounded-2xl overflow-hidden"
+            style={{ minHeight: "280px" }}
+          >
+            {/* Gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-400 via-rose-400 to-pink-500" />
+            <div className="absolute inset-0 backdrop-blur-sm bg-black/10" />
+
+            <div className="absolute inset-0 flex flex-col justify-between p-6">
+              <div className="text-xs text-white/70 font-medium uppercase tracking-widest">Clone</div>
+
+              {/* Waveform */}
+              <div className="flex gap-0.5 h-20 items-end justify-center">
+                {[...Array(40)].map((_, i) => {
+                  const h = Math.sin(i * 0.3 + 1) * 30 + 40;
+                  return (
+                    <motion.div
+                      key={i}
+                      className="flex-1 rounded-t-sm bg-white/40 max-w-[4px]"
+                      animate={playingClone ? { height: [`${h}%`, `${h + 25}%`, `${h}%`] } : { height: `${h}%` }}
+                      transition={{ duration: 0.8, repeat: playingClone ? Infinity : 0, delay: i * 0.02 }}
+                    />
+                  );
+                })}
               </div>
 
-              <div className="h-32 flex gap-1 items-end justify-center bg-white rounded-xl p-6 border border-black/5">
-                {isProcessing ? (
-                  <div className="flex items-center gap-3 text-gray-500">
+              <button
+                onClick={handleClonePlay}
+                className="flex items-center gap-2 text-sm font-medium text-white"
+              >
+                <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center">
+                  {isProcessing ? (
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="w-5 h-5 border-2 border-gray-300 border-t-black rounded-full"
+                      className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full"
                     />
-                    <span className="font-medium">Processing audio...</span>
-                  </div>
-                ) : (
-                  [...Array(80)].map((_, i) => {
-                    const baseHeight = Math.sin(i * 0.15) * 30 + 40;
-                    return (
-                      <motion.div
-                        key={i}
-                        className="flex-1 rounded-t-md bg-gradient-to-t from-black via-gray-600 to-gray-400 max-w-[4px]"
-                        initial={{ height: "5%" }}
-                        animate={isPlaying ? { height: [`${baseHeight}%`, `${baseHeight + 30}%`, `${baseHeight}%`] } : { height: `${baseHeight}%` }}
-                        transition={{ duration: 0.8, repeat: isPlaying ? Infinity : 0, delay: i * 0.01, ease: "easeInOut" }}
-                        style={{ boxShadow: "0 -2px 6px rgba(0,0,0,0.1)" }}
-                      />
-                    );
-                  })
-                )}
-              </div>
+                  ) : playingClone ? (
+                    <Pause className="w-3 h-3" />
+                  ) : (
+                    <Play className="w-3 h-3 ml-0.5" />
+                  )}
+                </div>
+                {isProcessing ? "Cloning..." : "Preview Clone"}
+              </button>
             </div>
           </div>
         </motion.div>
+
+        {/* Label */}
+        <div className="mt-4 text-center text-sm text-gray-400">
+          Voice Cloning — Create a replica that sounds just like you
+        </div>
       </div>
     </section>
   );
