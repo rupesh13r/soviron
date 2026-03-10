@@ -142,7 +142,6 @@ export default function Dashboard() {
 
   // BACKENDS in priority order — frontend tries each until one succeeds
   const BACKENDS = [
-    { name: 'Modal', url: 'https://rupeshrajbhar1508--soviron-tts-fastapi-app.modal.run' },
     { name: 'Cerebrium', url: 'https://api.aws.us-east-1.cerebrium.ai/v4/p-c85ac149/soviron-tts' },
     { name: 'GCP VM', url: 'http://35.206.231.152:8000' },
   ];
@@ -179,14 +178,14 @@ export default function Dashboard() {
 
       for (const backend of BACKENDS) {
         try {
-          setGenStatus(backend.name === 'Modal'
+          setGenStatus(backend.name === 'Cerebrium'
             ? 'Warming up servers... this may take up to 60 seconds on first use.'
             : `Trying backup server (${backend.name})...`
           );
 
           if (backend.name === 'Cerebrium') {
             // Cerebrium expects JSON with base64 audio
-            const body: any = { text, speed: Number(speed), pitch: Number(pitch), format: String(format) };
+            const body: any = { text, speed: parseFloat(Number(speed).toFixed(2)), pitch: parseFloat(Number(pitch).toFixed(2)), format: String(format) };
             if (sessionVoiceFile) {
               const reader = new FileReader();
               const audioB64 = await new Promise<string>((resolve) => {
