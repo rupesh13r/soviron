@@ -111,260 +111,80 @@ export default function PricingPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Tenor+Sans&family=Space+Mono:wght@400;700&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-          --black: #080808;
-          --gold: #C9A84C;
-          --gold-light: #E8C97A;
-          --gold-dim: #7A6330;
-          --white: #F5F0E8;
-          --purple: rgba(107,63,160,0.1);
+          --bg: #0a0b14; --bg-card: rgba(17,18,37,0.7);
+          --accent: #6366f1; --accent-light: #818cf8; --accent-dim: rgba(99,102,241,0.35);
+          --cyan: #06b6d4; --text: #e2e8f0; --text-muted: #94a3b8; --text-dim: #64748b;
+          --border: rgba(99,102,241,0.12); --border-s: rgba(255,255,255,0.06);
+          --r: 12px; --r-sm: 8px;
         }
-        html, body { background: var(--black); color: var(--white); font-family: 'Tenor Sans', sans-serif; }
-
-        /* NAV */
-        .nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-          padding: 24px 60px;
-          display: flex; align-items: center; justify-content: space-between;
-          background: rgba(8,8,8,0.9);
-          border-bottom: 1px solid rgba(201,168,76,0.08);
-          backdrop-filter: blur(12px);
-        }
-        .nav-logo {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 20px; font-weight: 300;
-          letter-spacing: 0.35em; color: var(--gold);
-          text-transform: uppercase; text-decoration: none;
-        }
+        html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+        .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 60px; display: flex; align-items: center; justify-content: space-between; background: rgba(10,11,20,0.85); border-bottom: 1px solid var(--border-s); backdrop-filter: blur(20px); }
+        .nav-logo { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
         .nav-links { display: flex; gap: 32px; align-items: center; }
-        .nav-link {
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.2em;
-          text-transform: uppercase; color: rgba(245,240,232,0.4);
-          text-decoration: none; transition: color 0.3s;
-        }
-        .nav-link:hover { color: var(--white); }
-        .nav-btn {
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.2em;
-          text-transform: uppercase; color: var(--black);
-          background: var(--gold); border: none;
-          padding: 10px 20px; cursor: pointer;
-          text-decoration: none; transition: background 0.3s;
-        }
-        .nav-btn:hover { background: var(--gold-light); }
-
-        /* PAGE */
-        .page { padding: 140px 60px 100px; max-width: 1400px; margin: 0 auto; }
-
-        /* HEADER */
-        .header { text-align: center; margin-bottom: 80px; }
-        .header-eyebrow {
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.45em;
-          text-transform: uppercase; color: var(--gold);
-          margin-bottom: 16px;
-        }
-        .header-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 64px; font-weight: 300; line-height: 1;
-          margin-bottom: 16px;
-        }
-        .header-title em { font-style: italic; color: var(--gold); }
-        .header-sub {
-          font-size: 15px; color: rgba(245,240,232,0.4);
-          line-height: 1.7; letter-spacing: 0.02em;
-        }
-
-        /* CURRENT PLAN BADGE */
-        .current-plan-banner {
-          background: rgba(201,168,76,0.06);
-          border: 1px solid rgba(201,168,76,0.15);
-          padding: 14px 24px; text-align: center;
-          margin-bottom: 40px;
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.2em;
-          text-transform: uppercase; color: rgba(245,240,232,0.4);
-        }
-        .current-plan-banner span { color: var(--gold); }
-
-        /* PLANS GRID */
-        .plans-grid {
-          display: grid;
-          grid-template-columns: repeat(6, 1fr);
-          gap: 1px;
-          background: rgba(201,168,76,0.08);
-          margin-bottom: 2px;
-        }
-        .plan-card {
-          background: var(--black);
-          padding: 40px 24px;
-          position: relative;
-          transition: background 0.3s;
-          display: flex; flex-direction: column;
-        }
-        .plan-card:hover { background: rgba(107,63,160,0.06); }
-        .plan-card.featured { background: rgba(107,63,160,0.1); }
-        .plan-card.current-plan { background: rgba(201,168,76,0.05); }
-        .plan-badge {
-          position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-          font-family: 'Space Mono', monospace;
-          font-size: 7px; letter-spacing: 0.25em;
-          color: var(--gold); border: 1px solid var(--gold-dim);
-          padding: 2px 8px; white-space: nowrap;
-        }
-        .current-badge {
-          position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-          font-family: 'Space Mono', monospace;
-          font-size: 7px; letter-spacing: 0.25em;
-          color: #5ec97a; border: 1px solid rgba(94,201,122,0.3);
-          padding: 2px 8px; white-space: nowrap;
-        }
-        .plan-name {
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.25em;
-          text-transform: uppercase; color: rgba(245,240,232,0.35);
-          margin-bottom: 16px; margin-top: 8px;
-        }
-        .plan-card.featured .plan-name,
-        .plan-card .plan-badge ~ .plan-name,
-        .plan-card .current-badge ~ .plan-name { margin-top: 28px; }
-        .plan-price {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 48px; font-weight: 300; line-height: 1;
-          color: var(--white); margin-bottom: 2px;
-        }
-        .plan-price .rupee { color: var(--gold); font-size: 22px; vertical-align: super; }
+        .nav-link { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; transition: color 0.3s; }
+        .nav-link:hover { color: var(--text); }
+        .nav-btn { font-size: 13px; font-weight: 600; color: #fff; background: var(--accent); border: none; padding: 10px 24px; border-radius: var(--r-sm); cursor: pointer; text-decoration: none; transition: all 0.3s; }
+        .nav-btn:hover { background: var(--accent-light); box-shadow: 0 4px 20px rgba(99,102,241,0.35); }
+        .page { padding: 120px 60px 80px; max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 64px; }
+        .header-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 16px; }
+        .header-title { font-size: 56px; font-weight: 700; line-height: 1; margin-bottom: 16px; letter-spacing: -0.02em; }
+        .header-title em { font-style: normal; background: linear-gradient(135deg, var(--accent), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .header-sub { font-size: 16px; color: var(--text-muted); line-height: 1.7; }
+        .current-plan-banner { background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.15); border-radius: var(--r-sm); padding: 14px 24px; text-align: center; margin-bottom: 40px; font-size: 13px; font-weight: 500; color: var(--text-muted); }
+        .current-plan-banner span { color: var(--accent-light); font-weight: 700; }
+        .plans-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--border-s); border-radius: var(--r); overflow: hidden; margin-bottom: 2px; }
+        .plan-card { background: var(--bg); padding: 36px 24px; position: relative; transition: all 0.3s; display: flex; flex-direction: column; }
+        .plan-card:hover { background: rgba(99,102,241,0.04); }
+        .plan-card.featured { background: rgba(99,102,241,0.08); }
+        .plan-card.current-plan { background: rgba(34,197,94,0.04); }
+        .plan-badge { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: var(--accent-light); background: rgba(99,102,241,0.15); border-radius: 4px; padding: 3px 10px; white-space: nowrap; }
+        .current-badge { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: #22c55e; background: rgba(34,197,94,0.12); border-radius: 4px; padding: 3px 10px; white-space: nowrap; }
+        .plan-name { font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; margin-top: 8px; }
+        .plan-card.featured .plan-name, .plan-card .plan-badge ~ .plan-name, .plan-card .current-badge ~ .plan-name { margin-top: 28px; }
+        .plan-price { font-size: 44px; font-weight: 700; line-height: 1; color: var(--text); margin-bottom: 2px; }
+        .plan-price .rupee { color: var(--accent-light); font-size: 20px; vertical-align: super; }
         .plan-price .free-text { font-size: 32px; }
-        .plan-period {
-          font-family: 'Space Mono', monospace;
-          font-size: 8px; letter-spacing: 0.15em;
-          color: rgba(245,240,232,0.25); margin-bottom: 4px;
-        }
-        .plan-chars {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 18px; font-weight: 300;
-          color: var(--gold); margin-bottom: 24px;
-          letter-spacing: 0.02em;
-        }
-        .plan-divider {
-          height: 1px; background: rgba(201,168,76,0.08);
-          margin-bottom: 20px;
-        }
+        .plan-period { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+        .plan-chars { font-size: 16px; font-weight: 600; color: var(--cyan); margin-bottom: 20px; }
+        .plan-divider { height: 1px; background: var(--border-s); margin-bottom: 20px; }
         .plan-features { list-style: none; flex: 1; margin-bottom: 28px; }
-        .plan-features li {
-          font-family: 'Space Mono', monospace;
-          font-size: 8px; letter-spacing: 0.1em;
-          color: rgba(245,240,232,0.35); padding: 5px 0;
-          border-bottom: 1px solid rgba(201,168,76,0.04);
-          display: flex; gap: 8px; align-items: flex-start;
-        }
-        .plan-features li::before { content: '—'; color: var(--gold-dim); flex-shrink: 0; }
-        .plan-cta {
-          width: 100%; padding: 13px;
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.15em;
-          text-transform: uppercase; cursor: pointer;
-          transition: all 0.3s; border: none;
-          text-align: center; text-decoration: none;
-          display: block;
-        }
-        .plan-cta.solid { background: var(--gold); color: var(--black); }
-        .plan-cta.solid:hover { background: var(--gold-light); }
-        .plan-cta.outline { background: transparent; color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
-        .plan-cta.outline:hover { background: rgba(201,168,76,0.06); border-color: var(--gold); }
-        .plan-cta.active-plan { background: transparent; color: rgba(94,201,122,0.6); border: 1px solid rgba(94,201,122,0.2); cursor: default; }
+        .plan-features li { font-size: 12px; color: var(--text-muted); padding: 6px 0; border-bottom: 1px solid var(--border-s); display: flex; gap: 8px; align-items: flex-start; line-height: 1.5; }
+        .plan-features li::before { content: '✓'; color: var(--cyan); flex-shrink: 0; font-weight: 600; }
+        .plan-cta { width: 100%; padding: 12px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; border: none; border-radius: var(--r-sm); text-align: center; text-decoration: none; display: block; }
+        .plan-cta.solid { background: linear-gradient(135deg, var(--accent), #8b5cf6); color: #fff; }
+        .plan-cta.solid:hover { box-shadow: 0 4px 20px rgba(99,102,241,0.35); }
+        .plan-cta.outline { background: transparent; color: var(--text); border: 1px solid var(--border-s); }
+        .plan-cta.outline:hover { border-color: var(--accent-dim); color: var(--accent-light); background: rgba(99,102,241,0.06); }
+        .plan-cta.active-plan { background: transparent; color: rgba(34,197,94,0.6); border: 1px solid rgba(34,197,94,0.2); cursor: default; border-radius: var(--r-sm); }
         .plan-cta:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* TOPUP SECTION */
-        .topup-section { margin-top: 60px; }
-        .topup-header { margin-bottom: 32px; }
-        .topup-eyebrow {
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.4em;
-          text-transform: uppercase; color: var(--gold);
-          margin-bottom: 8px;
-        }
-        .topup-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 36px; font-weight: 300;
-        }
-        .topup-title em { font-style: italic; color: var(--gold); }
-        .topup-sub {
-          font-size: 13px; color: rgba(245,240,232,0.35);
-          margin-top: 6px; letter-spacing: 0.02em;
-        }
-        .topup-grid {
-          display: grid; grid-template-columns: repeat(3, 1fr);
-          gap: 1px; background: rgba(201,168,76,0.08);
-        }
-        .topup-card {
-          background: var(--black); padding: 36px 28px;
-          display: flex; align-items: center; justify-content: space-between;
-          gap: 16px; transition: background 0.3s;
-        }
-        .topup-card:hover { background: rgba(107,63,160,0.06); }
-        .topup-chars {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 32px; font-weight: 300; color: var(--white);
-        }
-        .topup-chars span { color: var(--gold); font-size: 18px; }
-        .topup-price {
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.15em;
-          color: rgba(245,240,232,0.3); margin-top: 4px;
-        }
-        .topup-btn {
-          padding: 11px 20px; white-space: nowrap;
-          background: transparent; color: var(--gold);
-          border: 1px solid rgba(201,168,76,0.3);
-          font-family: 'Space Mono', monospace;
-          font-size: 9px; letter-spacing: 0.15em;
-          text-transform: uppercase; cursor: pointer; transition: all 0.3s;
-          flex-shrink: 0;
-        }
-        .topup-btn:hover { background: rgba(201,168,76,0.06); border-color: var(--gold); }
+        .topup-section { margin-top: 48px; }
+        .topup-header { margin-bottom: 28px; }
+        .topup-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 8px; }
+        .topup-title { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+        .topup-title em { font-style: normal; background: linear-gradient(135deg, var(--accent), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .topup-sub { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
+        .topup-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border-s); border-radius: var(--r-sm); overflow: hidden; }
+        .topup-card { background: var(--bg); padding: 28px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; transition: all 0.3s; }
+        .topup-card:hover { background: rgba(99,102,241,0.04); }
+        .topup-chars { font-size: 28px; font-weight: 600; color: var(--text); }
+        .topup-chars span { color: var(--accent-light); font-size: 16px; }
+        .topup-price { font-size: 12px; font-weight: 500; color: var(--text-dim); margin-top: 4px; }
+        .topup-btn { padding: 10px 20px; white-space: nowrap; background: transparent; color: var(--accent-light); border: 1px solid rgba(99,102,241,0.25); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; border-radius: var(--r-sm); cursor: pointer; transition: all 0.3s; flex-shrink: 0; }
+        .topup-btn:hover { background: rgba(99,102,241,0.08); border-color: var(--accent); }
         .topup-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        /* FAQ */
-        .faq-section { margin-top: 80px; padding-top: 60px; border-top: 1px solid rgba(201,168,76,0.08); }
-        .faq-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 36px; font-weight: 300; margin-bottom: 40px;
-        }
-        .faq-title em { font-style: italic; color: var(--gold); }
-        .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
-        .faq-item {
-          background: rgba(255,255,255,0.02);
-          border: 1px solid rgba(201,168,76,0.08);
-          padding: 28px;
-        }
-        .faq-q {
-          font-family: 'Space Mono', monospace;
-          font-size: 10px; letter-spacing: 0.12em;
-          text-transform: uppercase; color: var(--white);
-          margin-bottom: 10px;
-        }
-        .faq-a {
-          font-size: 13px; color: rgba(245,240,232,0.4);
-          line-height: 1.7; letter-spacing: 0.01em;
-        }
-
-        @media (max-width: 1024px) {
-          .plans-grid { grid-template-columns: repeat(3, 1fr); }
-          .topup-grid { grid-template-columns: 1fr; }
-          .faq-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 640px) {
-          .page { padding: 100px 24px 60px; }
-          .nav { padding: 20px 24px; }
-          .plans-grid { grid-template-columns: 1fr 1fr; }
-          .header-title { font-size: 40px; }
-        }
+        .faq-section { margin-top: 64px; padding-top: 48px; border-top: 1px solid var(--border-s); }
+        .faq-title { font-size: 32px; font-weight: 700; margin-bottom: 36px; letter-spacing: -0.02em; }
+        .faq-title em { font-style: normal; background: linear-gradient(135deg, var(--accent), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .faq-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 24px; }
+        .faq-q { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+        .faq-a { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+        @media (max-width: 1024px) { .plans-grid { grid-template-columns: repeat(3, 1fr); } .topup-grid { grid-template-columns: 1fr; } .faq-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) { .page { padding: 100px 24px 60px; } .nav { padding: 16px 24px; } .plans-grid { grid-template-columns: 1fr 1fr; } .header-title { font-size: 40px; } }
       `}</style>
-
       {/* NAV */}
       <nav className="nav">
         <a href="/" className="nav-logo">Soviron</a>
@@ -376,7 +196,7 @@ export default function PricingPage() {
             <a href="/login" className="nav-btn">Sign In</a>
           )}
         </div>
-      </nav>
+      </nav >
 
       <div className="page">
         {/* HEADER */}

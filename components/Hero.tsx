@@ -1,0 +1,152 @@
+"use client";
+import { motion } from "framer-motion";
+import { Play, Sparkles } from "lucide-react";
+
+export function Hero() {
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 bg-gradient-to-b from-gray-50 to-white">
+      {/* 3D Grid Background */}
+      <div className="absolute inset-0 opacity-30">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px)
+            `,
+            backgroundSize: "60px 60px",
+            transform: "perspective(1000px) rotateX(60deg)",
+            transformOrigin: "center top",
+          }}
+        />
+      </div>
+
+      {/* Floating 3D Elements */}
+      <motion.div
+        className="absolute top-1/4 left-1/4 w-32 h-32 rounded-3xl bg-gradient-to-br from-gray-200 to-gray-300 shadow-2xl"
+        animate={{ y: [0, -30, 0], rotateZ: [0, 5, 0], rotateY: [0, 15, 0] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        style={{ boxShadow: "20px 20px 60px rgba(0,0,0,0.1), -20px -20px 60px rgba(255,255,255,0.8)" }}
+      />
+      <motion.div
+        className="absolute bottom-1/3 right-1/4 w-24 h-24 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl"
+        animate={{ y: [0, 40, 0], rotateZ: [0, -10, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        style={{ boxShadow: "15px 15px 40px rgba(0,0,0,0.08), -15px -15px 40px rgba(255,255,255,0.9)" }}
+      />
+
+      <div className="relative z-10 max-w-6xl mx-auto text-center">
+        {/* Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-black/10 shadow-lg shadow-black/5 mb-8"
+        >
+          <Sparkles className="w-4 h-4 text-black" />
+          <span className="text-sm text-gray-700 font-medium">Powered by Chatterbox TTS</span>
+        </motion.div>
+
+        {/* Main headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-7xl md:text-8xl font-bold mb-6 leading-[0.95] tracking-tight"
+        >
+          <span className="text-black">Clone any voice</span>
+          <br />
+          <span className="text-gray-400">in seconds</span>
+        </motion.h1>
+
+        {/* Subheadline */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed"
+        >
+          Upload a voice sample. Type your script. Get broadcast-ready audio in seconds.
+          <br />
+          Powered by Chatterbox TTS.
+        </motion.p>
+
+        {/* CTA buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20"
+        >
+          <a href="/signup" className="group relative px-10 py-5 bg-black text-white rounded-2xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20">
+            <span className="relative z-10 flex items-center gap-2 font-semibold text-lg">
+              Start cloning for free
+              <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                →
+              </motion.span>
+            </span>
+          </a>
+
+          <a href="#demo" className="group px-10 py-5 bg-white border border-black/10 rounded-2xl hover:bg-gray-50 transition-all flex items-center gap-2 shadow-lg shadow-black/5">
+            <Play className="w-5 h-5 text-black" />
+            <span className="font-semibold text-lg text-black">Watch demo</span>
+          </a>
+        </motion.div>
+
+        {/* 3D Voice Wave Visualization */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="relative max-w-4xl mx-auto"
+        >
+          <div
+            className="relative rounded-3xl overflow-hidden border border-black/10 bg-white p-12 shadow-2xl"
+            style={{ boxShadow: "0 40px 100px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.5)" }}
+          >
+            {/* 3D Waveform */}
+            <div className="flex gap-2 h-48 items-end justify-center">
+              {[...Array(60)].map((_, i) => {
+                const height = Math.sin(i * 0.2) * 40 + 50;
+                return (
+                  <motion.div
+                    key={i}
+                    className="flex-1 rounded-t-lg bg-gradient-to-t from-black via-gray-700 to-gray-400"
+                    animate={{ height: [`${height}%`, `${height + 20}%`, `${height}%`] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: i * 0.03, ease: "easeInOut" }}
+                    style={{ boxShadow: "0 -4px 12px rgba(0,0,0,0.15)", maxWidth: "8px" }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Processing indicator */}
+            <motion.div
+              animate={{ scale: [1, 1.02, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="mt-8 px-8 py-4 bg-gray-50 rounded-2xl border border-black/5 flex items-center justify-center gap-4"
+            >
+              <div className="flex gap-1.5">
+                {[...Array(3)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="w-2 h-2 bg-black rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                  />
+                ))}
+              </div>
+              <span className="text-sm font-semibold text-black">Processing audio...</span>
+            </motion.div>
+          </div>
+
+          {/* 3D shadow effect */}
+          <div
+            className="absolute inset-0 -z-10 translate-y-8 blur-3xl opacity-30"
+            style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, transparent 70%)" }}
+          />
+        </motion.div>
+      </div>
+    </section>
+  );
+}
