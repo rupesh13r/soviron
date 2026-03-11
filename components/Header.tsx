@@ -1,25 +1,52 @@
 "use client";
-import { motion } from "framer-motion";
-import { Menu } from "lucide-react";
-import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, LogOut } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 
 export function Header() {
   const [user, setUser] = useState<any>(null);
+  const [plan, setPlan] = useState<string>('free');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+  useEffect(() => {
+    const fetchUserAndPlan = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
+      if (session?.user) {
+        const { data } = await supabase.from('profiles').select('plan').eq('id', session.user.id).single();
+        if (data) setPlan(data.plan || 'free');
+      }
+    };
+
+    fetchUserAndPlan();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const { data } = await supabase.from('profiles').select('plan').eq('id', session.user.id).single();
+        if (data) setPlan(data.plan || 'free');
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/';
+  };
 
   return (
     <motion.header
@@ -62,9 +89,80 @@ export function Header() {
           {/* CTA buttons */}
           <div className="hidden md:flex items-center gap-4">
             {user ? (
-              <a href="/dashboard" className="px-6 py-2.5 bg-black text-white rounded-xl font-medium hover:scale-105 transition-transform shadow-lg shadow-black/10">
-                Dashboard
-              </a>
+              <div className="flex items-center gap-3">
+                <a href="/dashboard" className="px-4 py-2 bg-black text-white text-sm rounded-xl font-medium hover:scale-105 transition-transform">
+                  Dashboard
+                </a>
+                
+                <div className="relative" ref={dropdownRef}>
+                  <button 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-9 h-9 rounded-full overflow-hidden border border-black/10 hover:border-black/30 transition-colors bg-gray-100 flex items-center justify-center text-black font-semibold"
+                  >
+                    {user.user_metadata?.avatar_url ? (
+                      <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      (user.user_metadata?.full_name || user.email || 'U').charAt(0).toUpperCase()
+                    )}
+                  </button>
+
+                  <AnimatePresence>
+                    {isDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-3 min-w-[220px] bg-white rounded-2xl shadow-xl border border-black/8 overflow-hidden flex flex-col pt-3"
+                      >
+                        {/* User info block */}
+                        <div className="px-4 pb-3 mb-2 border-b border-black/5 flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center font-bold text-black border border-black/5">
+                            {user.user_metadata?.avatar_url ? (
+                              <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                              (user.user_metadata?.full_name || user.email || 'U').charAt(0).toUpperCase()
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-semibold text-black truncate">
+                              {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                            </span>
+                            <span className="text-xs text-gray-500 truncate">
+                              {user.email}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Links */}
+                        <div className="flex flex-col px-2 pb-2">
+                          <a href="/dashboard" className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-2" onClick={() => setIsDropdownOpen(false)}>
+                            Dashboard
+                          </a>
+                          <a href="/pricing" className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between" onClick={() => setIsDropdownOpen(false)}>
+                            Plan
+                            <span className="text-[10px] font-bold tracking-wider text-black bg-gray-100 px-2 py-0.5 rounded-md uppercase">
+                              {plan}
+                            </span>
+                          </a>
+                          <div className="px-3 py-2 flex items-center justify-between">
+                            <span className="text-xs font-medium text-gray-400">User ID</span>
+                            <span className="text-[11px] font-mono text-gray-500">{user.id.substring(0, 8)}</span>
+                          </div>
+                          <div className="h-px bg-black/5 my-1 mx-1" />
+                          <button 
+                            onClick={handleSignOut}
+                            className="px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors text-left flex items-center gap-2"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Sign out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
             ) : (
               <>
                 <a href="/login" className="text-gray-600 hover:text-black transition-colors font-medium">
