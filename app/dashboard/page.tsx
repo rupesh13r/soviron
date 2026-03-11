@@ -509,10 +509,6 @@ export default function Dashboard() {
           <div className="flex justify-end mb-8 relative z-50">
             {user && (
               <div className="flex items-center gap-3" style={{ position: 'relative' }}>
-                <a href="/dashboard" className="px-4 py-2 bg-black text-white text-sm rounded-xl font-medium hover:scale-105 transition-transform" style={{ textDecoration: 'none' }}>
-                  Dashboard
-                </a>
-                
                 <div className="relative" ref={dropdownRef}>
                   <button 
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -556,9 +552,6 @@ export default function Dashboard() {
 
                         {/* Links */}
                         <div className="flex flex-col px-2 pb-2">
-                          <a href="/dashboard" className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-2" style={{ textDecoration: 'none' }} onClick={() => setIsDropdownOpen(false)}>
-                            Dashboard
-                          </a>
                           <a href="/pricing" className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between" style={{ textDecoration: 'none' }} onClick={() => setIsDropdownOpen(false)}>
                             Plan
                             <span className="text-[10px] font-bold tracking-wider text-black bg-gray-100 px-2 py-0.5 rounded-md uppercase">
