@@ -2,7 +2,7 @@ import { Github, Twitter, Linkedin, Youtube } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="relative border-t border-black/10 py-16 px-6 bg-white">
+    <footer className="relative border-t border-black/10 py-12 md:py-16 px-4 sm:px-6 w-full overflow-hidden bg-white/50 backdrop-blur-md">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-10 md:gap-12 mb-12 text-center md:text-left">
           {/* Brand */}

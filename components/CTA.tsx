@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 
 export function CTA() {
   return (
-    <section className="relative py-32 px-6">
+    <section className="relative py-20 md:py-32 px-4 sm:px-6 w-full overflow-hidden">
       <div className="relative max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -33,7 +33,7 @@ export function CTA() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl md:text-6xl font-bold mb-6"
+              className="text-3xl md:text-6xl font-bold mb-6 break-words"
             >
               Ready to clone your voice?
             </motion.h2>
@@ -57,7 +57,7 @@ export function CTA() {
             >
               <a
                 href="/signup"
-                className="w-full sm:w-auto group px-8 py-4 sm:px-10 sm:py-5 bg-white text-black rounded-2xl font-semibold text-lg hover:scale-105 transition-all flex items-center justify-center gap-3 shadow-2xl shadow-white/10"
+                className="inline-flex max-w-fit mx-auto px-6 py-4 sm:px-10 sm:py-5 bg-white text-black rounded-xl font-semibold text-base sm:text-lg md:hover:scale-105 transition-all text-center justify-center gap-3 shadow-2xl shadow-white/10"
               >
                 Get started for free
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -65,7 +65,7 @@ export function CTA() {
 
               <a
                 href="mailto:hello@soviron.tech"
-                className="w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-5 bg-white/10 border border-white/20 rounded-2xl font-semibold text-lg hover:bg-white/20 transition-all text-center"
+                className="inline-flex max-w-fit mx-auto px-6 py-4 sm:px-10 sm:py-5 bg-white/10 border border-white/20 rounded-xl font-semibold text-base sm:text-lg hover:bg-white/20 transition-all text-center justify-center gap-2"
               >
                 Contact us
               </a>

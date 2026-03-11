@@ -92,7 +92,7 @@ const topups = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="relative py-32 px-6 bg-gradient-to-b from-white to-gray-50">
+    <section id="pricing" className="relative py-20 md:py-32 px-4 sm:px-6 bg-gradient-to-b from-white to-gray-50 w-full overflow-hidden">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -101,7 +101,7 @@ export function Pricing() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12 md:mb-20"
         >
-          <h2 className="text-5xl md:text-7xl font-bold mb-4 md:mb-6 text-black tracking-tight">
+          <h2 className="text-4xl md:text-7xl font-bold mb-4 md:mb-6 text-black tracking-tight break-words">
             Simple pricing
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">

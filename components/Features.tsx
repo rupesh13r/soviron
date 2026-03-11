@@ -4,7 +4,7 @@ import { Zap, Shield, Globe, Cpu, Music, Sparkles } from "lucide-react";
 
 export function Features() {
   return (
-    <section id="features" className="relative py-32 px-6 bg-gray-50">
+    <section id="features" className="relative py-20 md:py-32 px-4 sm:px-6 bg-gray-50 w-full overflow-hidden">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -13,7 +13,7 @@ export function Features() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-6xl md:text-7xl font-bold mb-6 text-black tracking-tight">
+          <h2 className="text-4xl md:text-7xl font-bold mb-6 text-black tracking-tight break-words">
             Built for perfection
           </h2>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto">
@@ -179,7 +179,7 @@ export function Features() {
                 <p className="text-gray-500 leading-relaxed">Integrate Soviron directly into your workflow with our simple REST API. Available on Creator, Pro, and Studio plans.</p>
               </div>
             </div>
-            <a href="/signup" className="flex-shrink-0 w-full md:w-auto px-6 py-3 bg-black text-white rounded-xl font-medium hover:scale-105 transition-transform text-sm md:ml-8 text-center">
+            <a href="/signup" className="flex-shrink-0 w-full md:w-auto px-6 py-3 bg-black text-white rounded-xl font-medium md:hover:scale-105 transition-transform text-sm md:ml-8 text-center max-w-fit mx-auto md:mx-0">
               View docs →
             </a>
           </motion.div>

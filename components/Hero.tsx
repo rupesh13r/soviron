@@ -57,11 +57,11 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-5xl md:text-8xl font-bold mb-6 leading-[1.1] md:leading-[0.95] tracking-tight"
+          className="text-4xl md:text-7xl font-bold mb-6 leading-[1.2] md:leading-[1.1] tracking-tight w-full break-words text-center"
         >
           <span className="text-black">Clone any voice</span>
-          <br />
-          <span className="text-gray-400">in seconds</span>
+          <br className="hidden md:block" />
+          <span className="text-gray-400"> in seconds</span>
         </motion.h1>
 
         {/* Subheadline */}
@@ -69,7 +69,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-lg md:text-2xl text-gray-600 mb-10 md:mb-12 max-w-3xl mx-auto leading-relaxed"
+          className="text-lg md:text-2xl text-gray-600 mb-10 md:mb-12 max-w-3xl mx-auto leading-relaxed text-center px-4"
         >
           Upload a voice sample. Type your script. Get broadcast-ready audio in seconds.
         </motion.p>
@@ -79,11 +79,11 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20"
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 md:mb-20 w-full"
         >
           {user ? (
-            <a href="/dashboard" className="w-full sm:w-auto group relative px-8 py-4 sm:px-10 sm:py-5 bg-black text-white rounded-2xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20 text-center">
-              <span className="relative z-10 flex items-center gap-2 font-semibold text-lg">
+            <a href="/dashboard" className="inline-flex max-w-fit mx-auto px-6 py-4 sm:px-10 sm:py-5 bg-black text-white rounded-xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20 text-center items-center justify-center">
+              <span className="relative z-10 flex items-center gap-2 font-semibold text-base sm:text-lg">
                 Go to Dashboard
                 <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
                   →
@@ -91,8 +91,8 @@ export function Hero() {
               </span>
             </a>
           ) : (
-            <a href="/signup" className="w-full sm:w-auto group relative px-8 py-4 sm:px-10 sm:py-5 bg-black text-white rounded-2xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20 text-center">
-              <span className="relative z-10 flex items-center gap-2 font-semibold text-lg">
+            <a href="/signup" className="inline-flex max-w-fit mx-auto px-6 py-4 sm:px-10 sm:py-5 bg-black text-white rounded-xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20 text-center items-center justify-center">
+              <span className="relative z-10 flex items-center gap-2 font-semibold text-base sm:text-lg">
                 Start cloning for free
                 <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
                   →
@@ -101,9 +101,9 @@ export function Hero() {
             </a>
           )}
 
-          <a href="#demo" className="w-full sm:w-auto group px-8 py-4 sm:px-10 sm:py-5 bg-white border border-black/10 rounded-2xl hover:bg-gray-50 transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/5">
+          <a href="#demo" className="inline-flex max-w-fit mx-auto px-6 py-4 sm:px-10 sm:py-5 bg-white border border-black/10 rounded-xl hover:bg-gray-50 transition-all items-center justify-center gap-2 shadow-lg shadow-black/5">
             <Play className="w-5 h-5 text-black" />
-            <span className="font-semibold text-lg text-black">Watch demo</span>
+            <span className="font-semibold text-base sm:text-lg text-black">Watch demo</span>
           </a>
         </motion.div>
 

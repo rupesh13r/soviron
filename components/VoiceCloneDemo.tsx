@@ -32,7 +32,7 @@ export function VoiceCloneDemo() {
   };
 
   return (
-    <section id="demo" className="relative py-32 px-6 bg-gradient-to-b from-white via-gray-50 to-white">
+    <section id="demo" className="relative py-20 md:py-32 px-4 sm:px-6 bg-gradient-to-b from-white via-gray-50 to-white w-full overflow-hidden">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <motion.div
@@ -42,7 +42,7 @@ export function VoiceCloneDemo() {
           transition={{ duration: 0.6 }}
           className="mb-12"
         >
-          <h2 className="text-4xl md:text-6xl font-bold text-black tracking-tight mb-4">
+          <h2 className="text-4xl md:text-6xl font-bold text-black tracking-tight mb-4 break-words">
             Hear the difference
           </h2>
           <p className="text-xl text-gray-500">
