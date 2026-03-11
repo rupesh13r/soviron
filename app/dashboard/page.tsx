@@ -591,8 +591,30 @@ export default function Dashboard() {
                   <div className="dash-card dash-card-accent" style={{ marginBottom: 16 }}>
                     <p className="dash-card-title">01 — Your Text</p>
                     <textarea className="dash-textarea" placeholder="Type or paste the text you want to convert to speech..." value={text} onChange={e => setText(e.target.value)} />
+                    
+                    {text.length >= 5000 && text.length < 10000 && (
+                      <div className="mt-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl px-4 py-3 text-sm font-medium">
+                        Long generation. This may take 5–10 minutes. Please keep this tab open.
+                      </div>
+                    )}
+                    {text.length >= 10000 && text.length < 20000 && (
+                      <div className="mt-3 bg-orange-50 border border-orange-200 text-orange-800 rounded-xl px-4 py-3 text-sm font-medium">
+                        Very long generation. This could take 10–20 minutes. Do not close this tab.
+                      </div>
+                    )}
+                    {text.length >= 20000 && text.length <= 40000 && (
+                      <div className="mt-3 bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm font-medium">
+                        Extremely long generation. This may take 20–30+ minutes. Do not close this tab.
+                      </div>
+                    )}
+                    {text.length > 40000 && (
+                      <div className="mt-3 bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm font-medium">
+                        Maximum limit of 40,000 characters reached.
+                      </div>
+                    )}
+
                     <div className="dash-char-row">
-                      <span className={text.length > charsRemaining ? 'warn' : ''}>{text.length} typed</span>
+                      <span className={text.length > charsRemaining || text.length > 40000 ? 'warn' : ''}>{text.length.toLocaleString()} typed</span>
                       <span>{charsRemaining.toLocaleString()} remaining</span>
                     </div>
                   </div>
@@ -651,7 +673,7 @@ export default function Dashboard() {
                   </div>
                   <div className="dash-card dash-card-accent">
                     <p className="dash-card-title">04 — Generate</p>
-                    <button className="dash-gen-btn" onClick={handleGenerate} disabled={generating || !text.trim()}>
+                    <button className="dash-gen-btn" onClick={handleGenerate} disabled={generating || !text.trim() || text.length > 40000}>
                       {generating ? 'Generating...' : 'Generate Speech →'}
                     </button>
                     {generating && genStatus && <p style={{ fontSize: 13, color: '#6B7280', marginTop: 12, lineHeight: 1.6 }}>{genStatus}</p>}
