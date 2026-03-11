@@ -506,7 +506,7 @@ export default function Dashboard() {
         <main className="dash-main">
 
           {/* ── TOP NAV DROPDOWN ── */}
-          <div className="flex justify-end mb-8 relative z-50">
+          <div className="absolute right-[52px] top-[48px] z-50">
             {user && (
               <div className="flex items-center gap-3" style={{ position: 'relative' }}>
                 <div className="relative" ref={dropdownRef}>
