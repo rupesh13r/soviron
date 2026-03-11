@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
+import { motion, AnimatePresence } from 'framer-motion';
+import { LogOut } from 'lucide-react';
 
 type Voice = {
   id: string;
@@ -27,6 +29,8 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [tab, setTab] = useState<Tab>('generate');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Generate tab
   const [text, setText] = useState('');
@@ -63,6 +67,16 @@ export default function Dashboard() {
 
   const cloneInputRef = useRef<HTMLInputElement>(null);
   const sessionInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const getUser = async () => {
@@ -486,11 +500,91 @@ export default function Dashboard() {
                 <div className="dash-quota-fill" style={{ width: `${charsPercent}%` }} />
               </div>
             </div>
-            <button className="dash-btn-logout" onClick={handleLogout}>Sign Out</button>
           </div>
         </aside>
 
         <main className="dash-main">
+
+          {/* ── TOP NAV DROPDOWN ── */}
+          <div className="flex justify-end mb-8 relative z-50">
+            {user && (
+              <div className="flex items-center gap-3" style={{ position: 'relative' }}>
+                <a href="/dashboard" className="px-4 py-2 bg-black text-white text-sm rounded-xl font-medium hover:scale-105 transition-transform" style={{ textDecoration: 'none' }}>
+                  Dashboard
+                </a>
+                
+                <div className="relative" ref={dropdownRef}>
+                  <button 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-9 h-9 rounded-full overflow-hidden border border-black/10 hover:border-black/30 transition-colors bg-gray-100 flex items-center justify-center text-black font-semibold cursor-pointer"
+                    style={{ padding: 0 }}
+                  >
+                    {user.user_metadata?.avatar_url ? (
+                      <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      (user.user_metadata?.full_name || user.email || 'U').charAt(0).toUpperCase()
+                    )}
+                  </button>
+
+                  <AnimatePresence>
+                    {isDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-3 min-w-[220px] bg-white rounded-2xl shadow-xl border border-black/8 overflow-hidden flex flex-col pt-3"
+                      >
+                        {/* User info block */}
+                        <div className="px-4 pb-3 mb-2 border-b border-black/5 flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center font-bold text-black border border-black/5">
+                            {user.user_metadata?.avatar_url ? (
+                              <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                              (user.user_metadata?.full_name || user.email || 'U').charAt(0).toUpperCase()
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-semibold text-black truncate">
+                              {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                            </span>
+                            <span className="text-xs text-gray-500 truncate">
+                              {user.email}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Links */}
+                        <div className="flex flex-col px-2 pb-2">
+                          <a href="/dashboard" className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-2" style={{ textDecoration: 'none' }} onClick={() => setIsDropdownOpen(false)}>
+                            Dashboard
+                          </a>
+                          <a href="/pricing" className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between" style={{ textDecoration: 'none' }} onClick={() => setIsDropdownOpen(false)}>
+                            Plan
+                            <span className="text-[10px] font-bold tracking-wider text-black bg-gray-100 px-2 py-0.5 rounded-md uppercase">
+                              {profile?.plan || 'free'}
+                            </span>
+                          </a>
+                          <div className="px-3 py-2 flex items-center justify-between">
+                            <span className="text-xs font-medium text-gray-400">User ID</span>
+                            <span className="text-[11px] font-mono text-gray-500">{user.id.substring(0, 8)}</span>
+                          </div>
+                          <div className="h-px bg-black/5 my-1 mx-1" />
+                          <button 
+                            onClick={handleLogout}
+                            className="px-3 py-2 mt-1 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors text-left flex items-center gap-2 cursor-pointer border-none bg-transparent w-full"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Sign out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* ── GENERATE TAB ── */}
           {tab === 'generate' && (
