@@ -1,8 +1,24 @@
 "use client";
 import { motion } from "framer-motion";
 import { Play, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export function Hero() {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 pt-32 bg-gradient-to-b from-gray-50 to-white">
       {/* 3D Grid Background */}
@@ -65,14 +81,25 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20"
         >
-          <a href="/signup" className="group relative px-10 py-5 bg-black text-white rounded-2xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20">
-            <span className="relative z-10 flex items-center gap-2 font-semibold text-lg">
-              Start cloning for free
-              <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                →
-              </motion.span>
-            </span>
-          </a>
+          {user ? (
+            <a href="/dashboard" className="group relative px-10 py-5 bg-black text-white rounded-2xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20">
+              <span className="relative z-10 flex items-center gap-2 font-semibold text-lg">
+                Go to Dashboard
+                <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                  →
+                </motion.span>
+              </span>
+            </a>
+          ) : (
+            <a href="/signup" className="group relative px-10 py-5 bg-black text-white rounded-2xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20">
+              <span className="relative z-10 flex items-center gap-2 font-semibold text-lg">
+                Start cloning for free
+                <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                  →
+                </motion.span>
+              </span>
+            </a>
+          )}
 
           <a href="#demo" className="group px-10 py-5 bg-white border border-black/10 rounded-2xl hover:bg-gray-50 transition-all flex items-center gap-2 shadow-lg shadow-black/5">
             <Play className="w-5 h-5 text-black" />

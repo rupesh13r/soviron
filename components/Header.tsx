@@ -1,8 +1,26 @@
 "use client";
 import { motion } from "framer-motion";
 import { Menu } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export function Header() {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -43,12 +61,20 @@ export function Header() {
 
           {/* CTA buttons */}
           <div className="hidden md:flex items-center gap-4">
-            <a href="/login" className="text-gray-600 hover:text-black transition-colors font-medium">
-              Sign in
-            </a>
-            <a href="/signup" className="px-6 py-2.5 bg-black text-white rounded-xl font-medium hover:scale-105 transition-transform shadow-lg shadow-black/10">
-              Get started
-            </a>
+            {user ? (
+              <a href="/dashboard" className="px-6 py-2.5 bg-black text-white rounded-xl font-medium hover:scale-105 transition-transform shadow-lg shadow-black/10">
+                Dashboard
+              </a>
+            ) : (
+              <>
+                <a href="/login" className="text-gray-600 hover:text-black transition-colors font-medium">
+                  Sign in
+                </a>
+                <a href="/signup" className="px-6 py-2.5 bg-black text-white rounded-xl font-medium hover:scale-105 transition-transform shadow-lg shadow-black/10">
+                  Get started
+                </a>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
