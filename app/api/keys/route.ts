@@ -2,15 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { randomBytes } from 'crypto';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Use dummy values during build to prevent supabaseKey is required
+const getSupabaseAdmin = () => createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy_key'
 );
 
 const ALLOWED_PLANS = ['creator', 'pro', 'studio'];
 
 // GET - list user's API keys
 export async function GET(req: NextRequest) {
+  const supabase = getSupabaseAdmin();
   const authHeader = req.headers.get('authorization');
   if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -29,6 +31,7 @@ export async function GET(req: NextRequest) {
 
 // POST - generate new API key
 export async function POST(req: NextRequest) {
+  const supabase = getSupabaseAdmin();
   const authHeader = req.headers.get('authorization');
   if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -79,6 +82,7 @@ export async function POST(req: NextRequest) {
 
 // DELETE - revoke API key
 export async function DELETE(req: NextRequest) {
+  const supabase = getSupabaseAdmin();
   const authHeader = req.headers.get('authorization');
   if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

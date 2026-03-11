@@ -20,7 +20,7 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 pt-32 bg-gradient-to-b from-gray-50 to-white">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 pt-20 md:pt-32 bg-gradient-to-b from-gray-50 to-white">
       {/* 3D Grid Background */}
       <div className="absolute inset-0 opacity-30">
         <div
@@ -57,7 +57,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-7xl md:text-8xl font-bold mb-6 leading-[0.95] tracking-tight"
+          className="text-5xl md:text-8xl font-bold mb-6 leading-[1.1] md:leading-[0.95] tracking-tight"
         >
           <span className="text-black">Clone any voice</span>
           <br />
@@ -69,7 +69,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed"
+          className="text-lg md:text-2xl text-gray-600 mb-10 md:mb-12 max-w-3xl mx-auto leading-relaxed"
         >
           Upload a voice sample. Type your script. Get broadcast-ready audio in seconds.
         </motion.p>
@@ -82,7 +82,7 @@ export function Hero() {
           className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20"
         >
           {user ? (
-            <a href="/dashboard" className="group relative px-10 py-5 bg-black text-white rounded-2xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20">
+            <a href="/dashboard" className="w-full sm:w-auto group relative px-8 py-4 sm:px-10 sm:py-5 bg-black text-white rounded-2xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20 text-center">
               <span className="relative z-10 flex items-center gap-2 font-semibold text-lg">
                 Go to Dashboard
                 <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
@@ -91,7 +91,7 @@ export function Hero() {
               </span>
             </a>
           ) : (
-            <a href="/signup" className="group relative px-10 py-5 bg-black text-white rounded-2xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20">
+            <a href="/signup" className="w-full sm:w-auto group relative px-8 py-4 sm:px-10 sm:py-5 bg-black text-white rounded-2xl overflow-hidden transition-all hover:scale-105 shadow-2xl shadow-black/20 text-center">
               <span className="relative z-10 flex items-center gap-2 font-semibold text-lg">
                 Start cloning for free
                 <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
@@ -101,7 +101,7 @@ export function Hero() {
             </a>
           )}
 
-          <a href="#demo" className="group px-10 py-5 bg-white border border-black/10 rounded-2xl hover:bg-gray-50 transition-all flex items-center gap-2 shadow-lg shadow-black/5">
+          <a href="#demo" className="w-full sm:w-auto group px-8 py-4 sm:px-10 sm:py-5 bg-white border border-black/10 rounded-2xl hover:bg-gray-50 transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/5">
             <Play className="w-5 h-5 text-black" />
             <span className="font-semibold text-lg text-black">Watch demo</span>
           </a>
@@ -115,7 +115,7 @@ export function Hero() {
           className="relative max-w-4xl mx-auto"
         >
           <div
-            className="relative rounded-3xl overflow-hidden border border-black/10 bg-white p-12 shadow-2xl"
+            className="relative rounded-3xl overflow-hidden border border-black/10 bg-white p-6 md:p-12 shadow-2xl"
             style={{ boxShadow: "0 40px 100px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.5)" }}
           >
             {/* 3D Waveform */}
@@ -138,7 +138,7 @@ export function Hero() {
             <motion.div
               animate={{ scale: [1, 1.02, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="mt-8 px-8 py-4 bg-gray-50 rounded-2xl border border-black/5 flex items-center justify-center gap-4"
+              className="mt-6 md:mt-8 px-6 py-3 md:px-8 md:py-4 bg-gray-50 rounded-2xl border border-black/5 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
             >
               <div className="flex gap-1.5">
                 {[...Array(3)].map((_, i) => (

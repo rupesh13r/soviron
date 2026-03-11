@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Use dummy values during build to prevent supabaseKey is required
+const getSupabaseAdmin = () => createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy_key'
 );
 
 const ALLOWED_PLANS = ['creator', 'pro', 'studio'];
 
 export async function POST(req: NextRequest) {
+  const supabase = getSupabaseAdmin();
   try {
     const apiKey = req.headers.get('x-api-key');
     if (!apiKey) {

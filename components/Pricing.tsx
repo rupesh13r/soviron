@@ -99,9 +99,9 @@ export function Pricing() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="text-center mb-12 md:mb-20"
         >
-          <h2 className="text-6xl md:text-7xl font-bold mb-6 text-black tracking-tight">
+          <h2 className="text-5xl md:text-7xl font-bold mb-4 md:mb-6 text-black tracking-tight">
             Simple pricing
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -110,7 +110,7 @@ export function Pricing() {
         </motion.div>
 
         {/* Pricing grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto mb-16 md:mb-20">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -129,7 +129,7 @@ export function Pricing() {
               )}
 
               <div
-                className={`relative h-full p-8 rounded-3xl bg-white border transition-all duration-300 ${
+                className={`relative h-full p-6 md:p-8 rounded-3xl bg-white border transition-all duration-300 ${
                   plan.highlighted ? "border-black/20 shadow-2xl" : "border-black/10 shadow-xl"
                 }`}
                 style={{
@@ -141,12 +141,12 @@ export function Pricing() {
                 <h3 className="text-2xl font-bold mb-2 text-black">{plan.name}</h3>
                 <p className="text-gray-600 text-sm mb-6">{plan.description}</p>
 
-                <div className="mb-8">
+                <div className="mb-6 md:mb-8">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-bold text-black">
+                    <span className="text-4xl md:text-5xl font-bold text-black">
                       {plan.price === "0" ? "Free" : `₹${plan.price}`}
                     </span>
-                    {plan.price !== "0" && <span className="text-gray-500">/month</span>}
+                    {plan.price !== "0" && <span className="text-gray-500 text-sm md:text-base">/month</span>}
                   </div>
                 </div>
 

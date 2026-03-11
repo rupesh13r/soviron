@@ -44,6 +44,12 @@ export default function ApiDocs() {
         .apid-info-box a { color: #080808; text-decoration: underline; text-underline-offset: 3px; }
         .apid-sub-heading { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6B7280; margin-bottom: 12px; margin-top: 28px; }
         @media (max-width: 900px) { .apid-sidebar { display: none; } .apid-main { padding: 32px 24px 60px; } .apid-nav { padding: 16px 24px; } }
+        @media (max-width: 640px) { 
+          .apid-section-title { font-size: 28px; } 
+          .apid-endpoint-url { font-size: 11px; word-break: break-all; }
+          .apid-code-block { padding: 24px 16px; font-size: 11px; }
+          .apid-param-table th, .apid-param-table td, .apid-error-table th, .apid-error-table td { padding: 10px 12px; font-size: 12px; }
+        }
       `}</style>
 
       <nav className="apid-nav">

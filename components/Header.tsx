@@ -8,6 +8,7 @@ export function Header() {
   const [user, setUser] = useState<any>(null);
   const [plan, setPlan] = useState<string>('free');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -176,10 +177,56 @@ export function Header() {
           </div>
 
           {/* Mobile menu button */}
-          <button className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <button 
+            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
             <Menu className="w-6 h-6 text-black" />
           </button>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden overflow-hidden bg-white/95 backdrop-blur-xl border-x border-b border-black/5 rounded-b-2xl shadow-xl shadow-black/5 mx-6"
+            >
+              <div className="flex flex-col p-6 gap-4">
+                <nav className="flex flex-col gap-4 mb-4">
+                  <a href="#features" className="text-lg font-medium text-gray-800 hover:text-black" onClick={() => setIsMobileMenuOpen(false)}>
+                    Features
+                  </a>
+                  <a href="#demo" className="text-lg font-medium text-gray-800 hover:text-black" onClick={() => setIsMobileMenuOpen(false)}>
+                    Demo
+                  </a>
+                  <a href="#pricing" className="text-lg font-medium text-gray-800 hover:text-black" onClick={() => setIsMobileMenuOpen(false)}>
+                    Pricing
+                  </a>
+                </nav>
+                <div className="h-px bg-black/5 w-full mb-2" />
+                <div className="flex flex-col gap-3">
+                  {user ? (
+                    <a href="/dashboard" className="w-full text-center px-6 py-3 bg-black text-white rounded-xl font-medium" onClick={() => setIsMobileMenuOpen(false)}>
+                      Dashboard
+                    </a>
+                  ) : (
+                    <>
+                      <a href="/login" className="w-full text-center px-6 py-3 border border-black/10 bg-white text-black rounded-xl font-medium" onClick={() => setIsMobileMenuOpen(false)}>
+                        Sign in
+                      </a>
+                      <a href="/signup" className="w-full text-center px-6 py-3 bg-black text-white rounded-xl font-medium" onClick={() => setIsMobileMenuOpen(false)}>
+                        Get started
+                      </a>
+                    </>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.header>
   );

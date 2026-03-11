@@ -27,13 +27,13 @@ export function CTA() {
           />
 
           {/* Content */}
-          <div className="relative px-12 py-20 text-center text-white">
+          <div className="relative px-6 py-16 md:px-12 md:py-20 text-center text-white">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-5xl md:text-6xl font-bold mb-6"
+              className="text-4xl md:text-6xl font-bold mb-6"
             >
               Ready to clone your voice?
             </motion.h2>
@@ -43,7 +43,7 @@ export function CTA() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto"
+              className="text-lg md:text-xl text-gray-400 mb-8 md:mb-10 max-w-2xl mx-auto"
             >
               Join creators and developers using Soviron to clone voices and build voice-powered products.
             </motion.p>
@@ -57,7 +57,7 @@ export function CTA() {
             >
               <a
                 href="/signup"
-                className="group px-10 py-5 bg-white text-black rounded-2xl font-semibold text-lg hover:scale-105 transition-all flex items-center gap-3 shadow-2xl shadow-white/10"
+                className="w-full sm:w-auto group px-8 py-4 sm:px-10 sm:py-5 bg-white text-black rounded-2xl font-semibold text-lg hover:scale-105 transition-all flex items-center justify-center gap-3 shadow-2xl shadow-white/10"
               >
                 Get started for free
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -65,7 +65,7 @@ export function CTA() {
 
               <a
                 href="mailto:hello@soviron.tech"
-                className="px-10 py-5 bg-white/10 border border-white/20 rounded-2xl font-semibold text-lg hover:bg-white/20 transition-all"
+                className="w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-5 bg-white/10 border border-white/20 rounded-2xl font-semibold text-lg hover:bg-white/20 transition-all text-center"
               >
                 Contact us
               </a>
@@ -76,7 +76,7 @@ export function CTA() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500"
+              className="mt-10 md:mt-12 flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 sm:gap-8 text-sm text-gray-500"
             >
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-400" />

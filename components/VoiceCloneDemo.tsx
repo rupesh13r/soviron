@@ -42,7 +42,7 @@ export function VoiceCloneDemo() {
           transition={{ duration: 0.6 }}
           className="mb-12"
         >
-          <h2 className="text-5xl md:text-6xl font-bold text-black tracking-tight mb-4">
+          <h2 className="text-4xl md:text-6xl font-bold text-black tracking-tight mb-4">
             Hear the difference
           </h2>
           <p className="text-xl text-gray-500">
@@ -83,7 +83,7 @@ export function VoiceCloneDemo() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="grid grid-cols-2 gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
         >
           {/* Original */}
           <div

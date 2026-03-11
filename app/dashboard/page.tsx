@@ -462,14 +462,34 @@ export default function Dashboard() {
 
         /* RESPONSIVE */
         @media (max-width: 900px) {
-          .dash-sidebar { position: relative; width: 100%; height: auto; bottom: auto; }
-          .dash-main { margin-left: 0; padding: 24px; width: 100%; }
+          .dash-sidebar { display: none; }
+          .dash-main { margin-left: 0; padding: 24px 16px; padding-bottom: 100px; width: 100%; }
           .dash-two-col, .dash-clone-grid, .dash-key-gen-row { grid-template-columns: 1fr; flex-direction: column; }
+          .dash-card { padding: 24px 20px; }
+          .dash-page-header { margin-bottom: 24px; }
+          .dash-page-title { font-size: 32px; }
         }
+
+        /* MOBILE BOTTOM NAV */
+        .dash-mobile-nav {
+          display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+          background: rgba(255,255,255,0.9); backdrop-filter: blur(12px);
+          border-top: 1px solid rgba(0,0,0,0.08); padding: 12px 16px 24px;
+        }
+        @media (max-width: 900px) {
+          .dash-mobile-nav { display: flex; justify-content: space-around; align-items: center; }
+        }
+        .dash-mobile-nav-btn {
+          display: flex; flex-direction: column; align-items: center; gap: 4px; border: none; background: transparent;
+          color: #9CA3AF; font-size: 10px; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: color 0.2s;
+        }
+        .dash-mobile-nav-btn.active { color: #080808; }
+        .dash-mobile-nav-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: transparent; transition: background 0.2s; }
+        .dash-mobile-nav-btn.active .dash-mobile-nav-icon { background: rgba(0,0,0,0.05); }
       `}</style>
 
       <div className="dash-layout">
-        <aside className="dash-sidebar">
+        <aside className="dash-sidebar md:flex">
           <a href="/" className="dash-logo">Soviron</a>
 
           <p className="dash-nav-label">Studio</p>
@@ -579,6 +599,26 @@ export default function Dashboard() {
             )}
           </div>
 
+          {/* ── MOBILE BOTTOM NAV ── */}
+          <nav className="dash-mobile-nav">
+            <button className={`dash-mobile-nav-btn ${tab === 'generate' ? 'active' : ''}`} onClick={() => setTab('generate')}>
+              <div className="dash-mobile-nav-icon">✨</div>
+              <span>Generate</span>
+            </button>
+            <button className={`dash-mobile-nav-btn ${tab === 'clone' ? 'active' : ''}`} onClick={() => setTab('clone')}>
+              <div className="dash-mobile-nav-icon">🎤</div>
+              <span>Clone</span>
+            </button>
+            <button className={`dash-mobile-nav-btn ${tab === 'voices' ? 'active' : ''}`} onClick={() => setTab('voices')}>
+              <div className="dash-mobile-nav-icon">👤</div>
+              <span>Voices</span>
+            </button>
+            <button className={`dash-mobile-nav-btn ${tab === 'api' ? 'active' : ''}`} onClick={() => setTab('api')}>
+              <div className="dash-mobile-nav-icon">⚡</div>
+              <span>API</span>
+            </button>
+          </nav>
+
           {/* ── GENERATE TAB ── */}
           {tab === 'generate' && (
             <>
@@ -591,24 +631,23 @@ export default function Dashboard() {
                   <div className="dash-card dash-card-accent" style={{ marginBottom: 16 }}>
                     <p className="dash-card-title">01 — Your Text</p>
                     <textarea className="dash-textarea" placeholder="Type or paste the text you want to convert to speech..." value={text} onChange={e => setText(e.target.value)} />
-                    
                     {text.length >= 5000 && text.length < 10000 && (
-                      <div className="mt-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl px-4 py-3 text-sm font-medium">
+                      <div className="mt-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl px-4 py-3 text-sm font-medium">
                         Long generation. This may take 5–10 minutes. Please keep this tab open.
                       </div>
                     )}
                     {text.length >= 10000 && text.length < 20000 && (
-                      <div className="mt-3 bg-orange-50 border border-orange-200 text-orange-800 rounded-xl px-4 py-3 text-sm font-medium">
+                      <div className="mt-4 bg-orange-50 border border-orange-200 text-orange-800 rounded-xl px-4 py-3 text-sm font-medium">
                         Very long generation. This could take 10–20 minutes. Do not close this tab.
                       </div>
                     )}
                     {text.length >= 20000 && text.length <= 40000 && (
-                      <div className="mt-3 bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm font-medium">
+                      <div className="mt-4 bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm font-medium">
                         Extremely long generation. This may take 20–30+ minutes. Do not close this tab.
                       </div>
                     )}
                     {text.length > 40000 && (
-                      <div className="mt-3 bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm font-medium">
+                      <div className="mt-4 bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm font-medium">
                         Maximum limit of 40,000 characters reached.
                       </div>
                     )}

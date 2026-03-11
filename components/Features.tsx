@@ -22,7 +22,7 @@ export function Features() {
         </motion.div>
 
         {/* Bento Grid */}
-        <div className="grid grid-cols-4 grid-rows-3 gap-4 h-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-none md:grid-rows-3 gap-4 h-auto">
 
           {/* 1 — Large: Lightning fast (col 1-2, row 1-2) */}
           <motion.div
@@ -30,7 +30,7 @@ export function Features() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="col-span-2 row-span-2 relative rounded-3xl bg-black overflow-hidden p-10 flex flex-col justify-between"
+            className="md:col-span-2 md:row-span-2 relative rounded-3xl bg-black overflow-hidden p-6 md:p-10 flex flex-col justify-between"
             style={{ minHeight: "320px" }}
           >
             {/* Background pattern */}
@@ -78,7 +78,7 @@ export function Features() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="col-span-1 row-span-1 relative rounded-3xl bg-white border border-black/8 p-8 flex flex-col justify-between overflow-hidden"
+            className="md:col-span-1 md:row-span-1 relative rounded-3xl bg-white border border-black/8 p-6 md:p-8 flex flex-col justify-between overflow-hidden"
             style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
           >
             <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center mb-4">
@@ -96,7 +96,7 @@ export function Features() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="col-span-1 row-span-1 relative rounded-3xl bg-white border border-black/8 p-8 flex flex-col justify-between overflow-hidden"
+            className="md:col-span-1 md:row-span-1 relative rounded-3xl bg-white border border-black/8 p-6 md:p-8 flex flex-col justify-between overflow-hidden"
             style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
           >
             <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center mb-4">
@@ -114,7 +114,7 @@ export function Features() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="col-span-1 row-span-1 relative rounded-3xl bg-white border border-black/8 p-8 flex flex-col justify-between overflow-hidden"
+            className="md:col-span-1 md:row-span-1 relative rounded-3xl bg-white border border-black/8 p-6 md:p-8 flex flex-col justify-between overflow-hidden"
             style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
           >
             <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center mb-4">
@@ -132,7 +132,7 @@ export function Features() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.25 }}
-            className="col-span-1 row-span-1 relative rounded-3xl bg-white border border-black/8 p-8 flex flex-col justify-between overflow-hidden"
+            className="md:col-span-1 md:row-span-1 relative rounded-3xl bg-white border border-black/8 p-6 md:p-8 flex flex-col justify-between overflow-hidden"
             style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
           >
             <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center mb-4">
@@ -150,10 +150,10 @@ export function Features() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="col-span-4 row-span-1 relative rounded-3xl bg-white border border-black/8 p-10 flex items-center justify-between overflow-hidden"
+            className="md:col-span-4 md:row-span-1 relative rounded-3xl bg-white border border-black/8 p-6 md:p-10 flex flex-col md:flex-row items-center justify-between overflow-hidden gap-6 md:gap-0"
             style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.06)", minHeight: "140px" }}
           >
-            <div className="flex items-center gap-8">
+            <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 md:gap-8">
               <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center flex-shrink-0">
                 <svg viewBox="0 0 40 40" width="28" height="28" fill="none">
                   <motion.circle cx="8" cy="20" r="4" fill="white"
@@ -179,7 +179,7 @@ export function Features() {
                 <p className="text-gray-500 leading-relaxed">Integrate Soviron directly into your workflow with our simple REST API. Available on Creator, Pro, and Studio plans.</p>
               </div>
             </div>
-            <a href="/signup" className="flex-shrink-0 px-6 py-3 bg-black text-white rounded-xl font-medium hover:scale-105 transition-transform text-sm ml-8">
+            <a href="/signup" className="flex-shrink-0 w-full md:w-auto px-6 py-3 bg-black text-white rounded-xl font-medium hover:scale-105 transition-transform text-sm md:ml-8 text-center">
               View docs →
             </a>
           </motion.div>

@@ -171,7 +171,11 @@ export default function PricingPage() {
         .pr-faq-q { font-size: 14px; font-weight: 600; color: #080808; margin-bottom: 10px; }
         .pr-faq-a { font-size: 14px; color: #6B7280; line-height: 1.7; }
         @media (max-width: 1024px) { .pr-plans-grid { grid-template-columns: repeat(3, 1fr); } .pr-topup-grid { grid-template-columns: 1fr; } .pr-faq-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 640px) { .pr-page { padding: 100px 24px 60px; } .pr-nav { padding: 16px 24px; } .pr-plans-grid { grid-template-columns: 1fr 1fr; } .pr-header-title { font-size: 40px; } }
+        @media (max-width: 768px) {
+          .pr-plans-grid { grid-template-columns: 1fr; }
+          .pr-nav-links { display: none; } /* Hide links on mobile, relying on a hamburger in a real app, but for now we'll just show the CTA or simplify nav */
+        }
+        @media (max-width: 640px) { .pr-page { padding: 100px 24px 60px; } .pr-nav { padding: 16px 24px; } .pr-header-title { font-size: 40px; } .pr-topup-card { flex-direction: column; text-align: center; } .pr-topup-btn { width: 100%; margin-top: 16px; } }
       `}</style>
       {/* NAV */}
       <nav className="pr-nav">
