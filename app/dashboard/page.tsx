@@ -291,6 +291,11 @@ export default function Dashboard() {
     </div>
   );
 
+  const firstName = user?.email?.split('@')[0].split('.')[0] || '';
+  const displayName = user?.user_metadata?.full_name?.split(' ')[0] 
+    || user?.user_metadata?.name?.split(' ')[0] 
+    || (firstName.charAt(0).toUpperCase() + firstName.slice(1));
+
   return (
     <>
       <style>{`
@@ -491,7 +496,7 @@ export default function Dashboard() {
           {tab === 'generate' && (
             <>
               <div className="dash-page-header">
-                <p className="dash-page-eyebrow">Welcome back, {user?.email?.split('@')[0]}</p>
+                <p className="dash-page-eyebrow">Welcome back, {displayName}</p>
                 <h1 className="dash-page-title">Generate Speech</h1>
               </div>
               <div className="dash-two-col">
