@@ -4,9 +4,9 @@ export function Footer() {
   return (
     <footer className="relative border-t border-black/10 py-12 md:py-16 px-4 sm:px-6 w-full overflow-hidden bg-white/50 backdrop-blur-md">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 md:gap-12 mb-12 text-center md:text-left">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-10 md:gap-12 mb-12 text-center md:text-left">
           {/* Brand */}
-          <div className="md:col-span-2 flex flex-col items-center md:items-start">
+          <div className="col-span-2 md:col-span-2 flex flex-col items-center md:items-start text-center sm:text-left">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-9 h-9 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="36" height="36">
@@ -39,7 +39,7 @@ export function Footer() {
           </div>
 
           {/* Product */}
-          <div>
+          <div className="col-span-1">
             <h4 className="font-semibold mb-4 text-black">Product</h4>
             <ul className="space-y-3 text-gray-600">
               <li><a href="#features" className="hover:text-black transition-colors">Features</a></li>
@@ -49,7 +49,7 @@ export function Footer() {
           </div>
 
           {/* Company */}
-          <div>
+          <div className="col-span-1">
             <h4 className="font-semibold mb-4 text-black">Company</h4>
             <ul className="space-y-3 text-gray-600">
               <li><a href="mailto:hello@soviron.tech" className="hover:text-black transition-colors">Contact</a></li>
@@ -57,8 +57,19 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Developers */}
+          <div className="col-span-1">
+            <h4 className="font-semibold mb-4 text-black">Developers</h4>
+            <ul className="space-y-3 text-gray-600">
+              <li><a href="/api-docs" className="hover:text-black transition-colors">API Docs</a></li>
+              <li><a href="/api-docs#reference" className="hover:text-black transition-colors">API Reference</a></li>
+              <li><a href="/api-docs#auth" className="hover:text-black transition-colors">Authentication</a></li>
+              <li><a href="/api-docs#limits" className="hover:text-black transition-colors">Rate Limits</a></li>
+            </ul>
+          </div>
+
           {/* Legal */}
-          <div>
+          <div className="col-span-1">
             <h4 className="font-semibold mb-4 text-black">Legal</h4>
             <ul className="space-y-3 text-gray-600">
               <li><a href="/privacy" className="hover:text-black transition-colors">Privacy Policy</a></li>

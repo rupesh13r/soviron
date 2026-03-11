@@ -20,7 +20,7 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 pt-20 md:pt-32 bg-gradient-to-b from-gray-50 to-white">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 md:px-6 pt-20 md:pt-32 bg-gradient-to-b from-gray-50 to-white max-w-full">
       {/* 3D Grid Background */}
       <div className="absolute inset-0 opacity-30">
         <div
@@ -52,17 +52,19 @@ export function Hero() {
       />
 
       <div className="relative z-10 max-w-6xl mx-auto text-center">
-        {/* Main headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-4xl md:text-7xl font-bold mb-6 leading-[1.2] md:leading-[1.1] tracking-tight w-full break-words text-center"
-        >
-          <span className="text-black">Clone any voice</span>
-          <br className="hidden md:block" />
-          <span className="text-gray-400"> in seconds</span>
-        </motion.h1>
+        {/* Main headline wrapper */}
+        <div className="w-full px-4 text-center overflow-hidden">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-3xl md:text-7xl font-bold mb-6 leading-[1.2] md:leading-[1.1] tracking-tight mx-auto break-words"
+          >
+            <span className="text-black">Clone any voice</span>
+            <br className="hidden md:block" />
+            <span className="text-gray-400"> in seconds</span>
+          </motion.h1>
+        </div>
 
         {/* Subheadline */}
         <motion.p
