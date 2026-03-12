@@ -89,7 +89,10 @@ export default function PricingPage() {
           });
           const result = await verifyRes.json();
           if (result.success) {
-            window.location.href = `/payment/success?plan=${planKey}&amount=${plans.find(p => p.planKey === planKey)?.price}&payment_id=${response.razorpay_payment_id}`;
+            const planObj = plans.find(p => p.planKey === planKey);
+            const planName = planObj ? planObj.name : String(planKey);
+            const amount = planObj ? planObj.price : 0;
+            window.location.href = `/payment/success?plan=${planName}&amount=${amount}&payment_id=${response.razorpay_payment_id}`;
           } else {
             alert('Payment verification failed. Contact support.');
           }
@@ -123,7 +126,9 @@ export default function PricingPage() {
           });
           const result = await verifyRes.json();
           if (result.success) {
-            window.location.href = `/payment/success?plan=topup-${topupKey}&amount=${price}&payment_id=${response.razorpay_payment_id}`;
+            const planName = `Top-up ${topupKey}`;
+            const amount = price;
+            window.location.href = `/payment/success?plan=${planName}&amount=${amount}&payment_id=${response.razorpay_payment_id}`;
           } else {
             alert('Top-up verification failed. Contact support.');
           }
