@@ -1,6 +1,8 @@
 "use client";
 import { motion } from "framer-motion";
 import { Check, Zap } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
 
 const plans = [
   {
@@ -91,6 +93,16 @@ const topups = [
 ];
 
 export function Pricing() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+    checkUser();
+  }, []);
+
   return (
     <section id="pricing" className="relative py-20 md:py-32 px-4 sm:px-6 bg-gradient-to-b from-white to-gray-50 w-full overflow-hidden">
       <div className="max-w-7xl mx-auto">
@@ -151,7 +163,7 @@ export function Pricing() {
                 </div>
 
                 <a
-                  href="/signup"
+                  href={isLoggedIn ? "/pricing" : (plan.price === "0" ? "/signup" : `/signup?plan=${plan.name.toLowerCase()}`)}
                   className={`block w-full py-4 rounded-xl font-semibold mb-8 transition-all text-center ${
                     plan.highlighted
                       ? "bg-black text-white shadow-xl shadow-black/20 hover:scale-105"
