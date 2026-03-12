@@ -129,15 +129,24 @@ export async function POST(req: NextRequest) {
     const decoder = new TextDecoder();
 
     const transformStream = new TransformStream({
+      start() {
+        (this as any).lineBuffer = '';
+      },
       transform(chunk, controller) {
         const textChunk = decoder.decode(chunk, { stream: true });
-        // Cerebrium returns newline separated JSON
-        const lines = textChunk.split('\n');
+        (this as any).lineBuffer += textChunk;
+        const lines = (this as any).lineBuffer.split('\n');
+        // Last element may be incomplete — keep it in buffer
+        (this as any).lineBuffer = lines.pop() || '';
         for (const line of lines) {
           if (line.trim()) {
-            // Forward as SSE event
-            controller.enqueue(encoder.encode(`data: ${line.trim()}\n\n`));
+            controller.enqueue(encoder.encode('data: ' + line.trim() + '\n\n'));
           }
+        }
+      },
+      flush(controller) {
+        if ((this as any).lineBuffer.trim()) {
+          controller.enqueue(encoder.encode('data: ' + (this as any).lineBuffer.trim() + '\n\n'));
         }
       }
     });

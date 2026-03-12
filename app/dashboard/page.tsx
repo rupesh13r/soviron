@@ -47,14 +47,8 @@ export default function Dashboard() {
   const [genStatus, setGenStatus] = useState('');
   // Audio handling state and refs
   const audioContextRef = useRef<AudioContext | null>(null);
-  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const audioBufferRef = useRef<AudioBuffer | null>(null);
-  const playbackStartTimeRef = useRef<number>(0);
-  const playbackOffsetRef = useRef<number>(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [generationComplete, setGenerationComplete] = useState(false);
-  const [isDonePlaying, setIsDonePlaying] = useState(false);
-  const [currentTimeDisplay, setCurrentTimeDisplay] = useState(0);
 
   // Clone tab
   const [voices, setVoices] = useState<Voice[]>([]);
@@ -191,38 +185,29 @@ export default function Dashboard() {
   const handleGenerate = async () => {
     if (!text.trim()) { setGenError('Please enter some text.'); return; }
     if (text.length > charsRemaining) { setGenError('Not enough characters remaining. Please upgrade.'); return; }
+
+    // Create the AudioContext at the very start of handleGenerate BEFORE any await calls
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    await audioCtx.resume(); // Ensure it's not suspended
+    audioContextRef.current = audioCtx;
     
     setGenerating(true); 
     setGenError(null); 
     setGenStatus('Warming up... starting stream');
     setGenerationComplete(false);
     setAudioUrl(null);
-    setIsPlaying(false);
-    setIsDonePlaying(false);
-    setCurrentTimeDisplay(0);
 
-    // Stop any existing audio context immediately
-    if (audioSourceRef.current) {
-        audioSourceRef.current.stop();
-        audioSourceRef.current.disconnect();
-        audioSourceRef.current = null;
+    // Stop existing audio immediately
+    if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
     }
-    if (audioContextRef.current) {
-        audioContextRef.current.close().catch(() => {});
-        audioContextRef.current = null;
-    }
-    audioBufferRef.current = null;
-    playbackOffsetRef.current = 0;
     
     let warmingUpTimer: NodeJS.Timeout | null = setTimeout(() => {
         setGenStatus('Warming up server... please wait a few seconds');
     }, 10000);
 
     try {
-      // 1. Prepare payload exactly like /api/tts expects
-      // Note: NEXT_PUBLIC_CEREBRIUM_API_KEY is no longer used here;
-      // Backend /api/tts uses env.CEREBRIUM_API_KEY invisibly
-      
       const body: any = { 
         text, 
         speed: parseFloat(Number(speed).toFixed(2)), 
@@ -242,10 +227,9 @@ export default function Dashboard() {
         body.voice_id = selectedVoice.id; // API proxies this internally now
       }
 
-      // Fetch temporary API key representing User Session (To authenticate against /api/tts natively)
+      // Fetch temporary API key representing User Session
       const { data: { session } } = await supabase.auth.getSession();
       
-      // Request Internal API proxy
       const res = await fetch(`/api/tts-internal`, {
         method: 'POST',
         headers: { 
@@ -265,9 +249,6 @@ export default function Dashboard() {
 
       const decoder = new TextDecoder();
       let buffer = '';
-      
-      // Native audio loop helpers
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       
       while (true) {
         const { done, value } = await reader.read();
@@ -298,7 +279,6 @@ export default function Dashboard() {
                 else if (dataObj.type === 'chunk') {
                     setGenStatus(`Generating chunk ${dataObj.index} of ${dataObj.total}...`);
                     
-                    // Decode B64 Audio Buffer dynamically mapped over
                     const binaryString = window.atob(dataObj.audio_b64);
                     const len = binaryString.length;
                     const bytes = new Uint8Array(len);
@@ -306,27 +286,26 @@ export default function Dashboard() {
                         bytes[i] = binaryString.charCodeAt(i);
                     }
                     
-                    // Update latest complete file blob continuously
                     const blob = new Blob([bytes], { type: `audio/${format}` });
-                    setAudioUrl(URL.createObjectURL(blob));
-
-                    const ctx = audioContextRef.current;
-                    if (!ctx) continue;
-
-                    // Decode completely independently per buffer array bounds synchronously overlapping Audio track outputs directly
-                    ctx.decodeAudioData(bytes.buffer, (newAudioBuffer) => {
-                        handleNewChunkAudio(newAudioBuffer, ctx);
-                    }, (e) => console.log('Decode error', e));
+                    const newUrl = URL.createObjectURL(blob);
+                    
+                    // Store current playback time before updating src
+                    if (audioRef.current) {
+                        const isPlaying = !audioRef.current.paused;
+                        const currentTime = audioRef.current.currentTime;
+                        audioRef.current.dataset.resumeTime = currentTime.toString();
+                        audioRef.current.dataset.resumePlaying = isPlaying ? 'true' : 'false';
+                    }
+                    
+                    setAudioUrl(newUrl);
                 }
                 else if (dataObj.type === 'done') {
                     setGenStatus(`Generation complete ✓`);
                     setGenerationComplete(true);
                     
-                    // Cleanup user session files
                     setSessionVoiceFile(null);
                     setSessionVoiceFileName('');
 
-                    // Increment quotas safely relying on server payload
                     await supabase.from('profiles').update({ chars_used: (profile?.chars_used || 0) + text.length }).eq('id', user.id);
                     setProfile((prev: any) => ({ ...prev, chars_used: (prev?.chars_used || 0) + text.length }));
                 }
@@ -343,103 +322,6 @@ export default function Dashboard() {
       if (generationComplete) setGenStatus('');
     }
   };
-
-  const handleNewChunkAudio = (newBuffer: AudioBuffer, ctx: AudioContext) => {
-      // Remember where we were playback-wise
-      const currentLoc = isPlaying ? (ctx.currentTime - playbackStartTimeRef.current + playbackOffsetRef.current) % (audioBufferRef.current?.duration || 1) : playbackOffsetRef.current;
-      
-      const wasPlaying = isPlaying;
-      
-      if (audioSourceRef.current) {
-          audioSourceRef.current.stop();
-          audioSourceRef.current.disconnect();
-      }
-
-      audioBufferRef.current = newBuffer;
-      const source = ctx.createBufferSource();
-      source.buffer = newBuffer;
-      source.connect(ctx.destination);
-      
-      source.onended = () => {
-         // Auto toggle when done natively avoiding premature ends
-         // If generation isn't complete, it just waits for next chunk update.
-         if (generationComplete && (ctx.currentTime - playbackStartTimeRef.current + playbackOffsetRef.current >= newBuffer.duration - 0.1)) {
-             setIsPlaying(false);
-             setIsDonePlaying(true);
-             playbackOffsetRef.current = 0; 
-         }
-      };
-
-      audioSourceRef.current = source;
-
-      if (wasPlaying || !audioBufferRef.current /* Force play on First chunk */) {
-         if (!wasPlaying && !audioBufferRef.current) {
-             setIsPlaying(true);
-         }
-         
-         const startLoc = Math.min(currentLoc, newBuffer.duration);
-         source.start(0, startLoc);
-         playbackStartTimeRef.current = ctx.currentTime;
-         playbackOffsetRef.current = startLoc;
-      }
-  };
-
-  const togglePlayback = () => {
-      const ctx = audioContextRef.current;
-      if (!ctx || !audioBufferRef.current) {
-          // If we have an audioUrl but no Context (like if user left tab), we just use standard audioUrl native below layout bounds
-          return;
-      }
-
-      if (isPlaying) {
-          // Pause logic
-          if (audioSourceRef.current) {
-              audioSourceRef.current.stop();
-          }
-          playbackOffsetRef.current += (ctx.currentTime - playbackStartTimeRef.current);
-          setIsPlaying(false);
-      } else {
-          // Play logic 
-          if (isDonePlaying) {
-              playbackOffsetRef.current = 0;
-              setIsDonePlaying(false);
-          }
-          
-          const source = ctx.createBufferSource();
-          source.buffer = audioBufferRef.current;
-          source.connect(ctx.destination);
-          
-          source.onended = () => {
-              if (generationComplete && (ctx.currentTime - playbackStartTimeRef.current + playbackOffsetRef.current >= audioBufferRef.current!.duration - 0.1)) {
-                 setIsPlaying(false);
-                 setIsDonePlaying(true);
-                 playbackOffsetRef.current = 0; 
-              }
-          };
-          
-          audioSourceRef.current = source;
-          const loc = playbackOffsetRef.current % audioBufferRef.current.duration;
-          source.start(0, loc);
-          playbackStartTimeRef.current = ctx.currentTime;
-          setIsPlaying(true);
-      }
-  };
-  
-  // Update time display dynamically
-  useEffect(() => {
-      let interval: NodeJS.Timeout;
-      if (isPlaying) {
-          interval = setInterval(() => {
-              const ctx = audioContextRef.current;
-              if (ctx) {
-                  let time = (ctx.currentTime - playbackStartTimeRef.current) + playbackOffsetRef.current;
-                  if (audioBufferRef.current && time > audioBufferRef.current.duration) time = audioBufferRef.current.duration;
-                  setCurrentTimeDisplay(time);
-              }
-          }, 100);
-      }
-      return () => clearInterval(interval);
-  }, [isPlaying]);
 
   const handleSaveVoice = async () => {
     if (!cloneFile) { setCloneError('Please upload a voice sample.'); return; }
@@ -936,21 +818,23 @@ export default function Dashboard() {
                     <div className="dash-audio-card" style={{ marginTop: 16 }}>
                       <p className="dash-audio-label">Generated Audio</p>
                       
-                      <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, padding: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
-                         <button onClick={togglePlayback} style={{ width: 40, height: 40, borderRadius: '50%', background: '#080808', color: '#FFF', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {isPlaying ? (
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                            ) : (
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                            )}
-                         </button>
-                         <div style={{ flex: 1, height: 4, background: 'rgba(0,0,0,0.06)', borderRadius: 2, position: 'relative' }}>
-                             <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', background: '#080808', borderRadius: 2, width: `${(audioBufferRef.current ? (currentTimeDisplay / audioBufferRef.current.duration) * 100 : 0)}%`, transition: 'width 0.1s linear' }} />
-                         </div>
-                         <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#6B7280' }}>
-                             {currentTimeDisplay.toFixed(1)}s / {audioBufferRef.current?.duration ? audioBufferRef.current.duration.toFixed(1) + 's' : '0.0s'}
-                         </div>
-                      </div>
+                      <audio 
+                        controls 
+                        ref={audioRef}
+                        src={audioUrl} 
+                        style={{ width: '100%', marginBottom: 16 }}
+                        onLoadedData={(e) => {
+                          const el = e.currentTarget;
+                          if (el.dataset.resumeTime) {
+                            el.currentTime = parseFloat(el.dataset.resumeTime);
+                            if (el.dataset.resumePlaying === 'true') {
+                              el.play().catch(() => {});
+                            }
+                            el.dataset.resumeTime = '';
+                            el.dataset.resumePlaying = '';
+                          }
+                        }}
+                      />
 
                       {generationComplete && (
                           <a href={audioUrl} download={`soviron-output.${format}`} className="dash-download-btn">↓ Download {format.toUpperCase()}</a>
