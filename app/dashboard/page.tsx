@@ -39,6 +39,7 @@ export default function Dashboard() {
   const [sessionVoiceFileName, setSessionVoiceFileName] = useState('');
   const [speed, setSpeed] = useState(1);
   const [pitch, setPitch] = useState(0);
+  const [emotion, setEmotion] = useState(0.5);
   const [format, setFormat] = useState('mp3');
   const [generating, setGenerating] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -182,6 +183,7 @@ export default function Dashboard() {
       }
       formData.append('speed', speed.toString());
       formData.append('pitch', pitch.toString());
+      formData.append('exaggeration', emotion.toString());
       formData.append('format', format);
       return formData;
     };
@@ -199,7 +201,7 @@ export default function Dashboard() {
 
           if (backend.name === 'Cerebrium') {
             // Cerebrium expects JSON with base64 audio
-            const body: any = { text, speed: parseFloat(Number(speed).toFixed(2)), pitch: parseFloat(Number(pitch).toFixed(2)), format: String(format) };
+            const body: any = { text, speed: parseFloat(Number(speed).toFixed(2)), pitch: parseFloat(Number(pitch).toFixed(2)), exaggeration: parseFloat(Number(emotion).toFixed(2)), format: String(format) };
             if (sessionVoiceFile) {
               const reader = new FileReader();
               const audioB64 = await new Promise<string>((resolve) => {
@@ -631,6 +633,7 @@ export default function Dashboard() {
                   <div className="dash-card dash-card-accent" style={{ marginBottom: 16 }}>
                     <p className="dash-card-title">01 — Your Text</p>
                     <textarea className="dash-textarea" placeholder="Type or paste the text you want to convert to speech..." value={text} onChange={e => setText(e.target.value)} />
+                    <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Tip: Use commas and periods for natural pauses. Add a blank line between paragraphs for longer breaks.</p>
                     {text.length >= 5000 && text.length < 10000 && (
                       <div className="mt-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl px-4 py-3 text-sm font-medium">
                         Long generation. This may take 5–10 minutes. Please keep this tab open.
@@ -692,6 +695,11 @@ export default function Dashboard() {
                       <div>
                         <div className="dash-slider-label">Pitch <span>{pitch > 0 ? `+${pitch}` : pitch}</span></div>
                         <input type="range" min="-10" max="10" step="1" value={pitch} onChange={e => setPitch(parseInt(e.target.value))} />
+                      </div>
+                      <div>
+                        <div className="dash-slider-label">EMOTION <span>{emotion.toFixed(2)}</span></div>
+                        <input type="range" min="0.0" max="1.0" step="0.05" value={emotion} onChange={e => setEmotion(parseFloat(e.target.value))} />
+                        <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 6 }}>Higher = more expressive and dramatic</p>
                       </div>
                       <div style={{ marginBottom: 16 }}>
                         <div className="dash-slider-label">Output Format <span style={{ textTransform: 'uppercase' }}>{format}</span></div>
