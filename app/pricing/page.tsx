@@ -88,8 +88,11 @@ export default function PricingPage() {
             body: JSON.stringify({ ...response, plan: planKey }),
           });
           const result = await verifyRes.json();
-          if (result.success) window.location.href = '/dashboard';
-          else alert('Payment verification failed. Contact support.');
+          if (result.success) {
+            window.location.href = `/payment/success?plan=${planKey}&amount=${plans.find(p => p.planKey === planKey)?.price}&payment_id=${response.razorpay_payment_id}`;
+          } else {
+            alert('Payment verification failed. Contact support.');
+          }
         },
         prefill: { email: user?.email },
         theme: { color: '#C9A84C' },
@@ -119,8 +122,11 @@ export default function PricingPage() {
             body: JSON.stringify({ ...response, topup: topupKey }),
           });
           const result = await verifyRes.json();
-          if (result.success) window.location.href = '/dashboard';
-          else alert('Top-up verification failed. Contact support.');
+          if (result.success) {
+            window.location.href = `/payment/success?plan=topup-${topupKey}&amount=${price}&payment_id=${response.razorpay_payment_id}`;
+          } else {
+            alert('Top-up verification failed. Contact support.');
+          }
         },
         prefill: { email: user?.email },
         theme: { color: '#C9A84C' },
