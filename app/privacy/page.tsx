@@ -34,6 +34,7 @@ export default function PrivacyPage() {
           <li>Text you submit for speech generation</li>
           <li>Voice samples you upload for voice cloning</li>
           <li>Usage data including characters generated and API calls made</li>
+          <li>We may collect device and browser information, including device identifiers, for fraud prevention, security, and to ensure fair use of our free tier services.</li>
         </ul>
 
         <h2>2. How We Use Your Information</h2>
@@ -43,6 +44,7 @@ export default function PrivacyPage() {
           <li>Track your usage and enforce plan limits</li>
           <li>Process payments and manage subscriptions</li>
           <li>Send transactional emails (account updates, payment receipts)</li>
+          <li>To detect and prevent abuse, fraud, and unauthorized use of our services.</li>
         </ul>
 
         <h2>3. Voice Data</h2>

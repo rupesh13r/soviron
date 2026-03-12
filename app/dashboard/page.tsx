@@ -84,6 +84,28 @@ export default function Dashboard() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = '/login'; return; }
       setUser(session.user);
+      
+      const fp = localStorage.getItem('device_fp');
+      if (fp) {
+        try {
+          // Send fingerprint to backend to verify and record ownership
+          // The backend determines if it's already owned by another user and sets limits accordingly
+          await fetch('/api/check-fingerprint', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ fingerprint: fp })
+          });
+        } catch (e) {
+          console.error('Failed to submit fingerprint', e);
+        } finally {
+          localStorage.removeItem('device_fp');
+          localStorage.removeItem('hasExistingDevice');
+        }
+      }
+
       // Clear any leftover voice state from previous session
       setSelectedVoice(null);
       setSessionVoiceFile(null);

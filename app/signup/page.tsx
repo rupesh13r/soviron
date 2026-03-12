@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { getDeviceFingerprint } from '../../lib/fingerprint';
 
 export default function SignupPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -9,6 +10,19 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     setGoogleLoading(true);
     setError(null);
+    try {
+      const fp = await getDeviceFingerprint();
+      const res = await fetch(`/api/check-fingerprint?fp=${fp}`);
+      const data = await res.json();
+      localStorage.setItem('device_fp', fp);
+      if (data.exists) {
+        localStorage.setItem('hasExistingDevice', 'true');
+      } else {
+        localStorage.removeItem('hasExistingDevice');
+      }
+    } catch (e) {
+      console.error('Fingerprint error:', e);
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback` },
