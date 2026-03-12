@@ -20,7 +20,7 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 md:px-6 pt-20 md:pt-32 bg-gradient-to-b from-gray-50 to-white max-w-full">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 md:px-6 pt-28 md:pt-32 bg-gradient-to-b from-gray-50 to-white max-w-full">
       {/* 3D Grid Background */}
       <div className="absolute inset-0 opacity-30">
         <div
@@ -58,11 +58,10 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl md:text-7xl font-bold mb-6 leading-[1.2] md:leading-[1.1] tracking-tight mx-auto break-words"
+            className="text-[2.5rem] md:text-7xl font-bold mb-6 leading-[1.1] tracking-tight mx-auto break-words"
           >
-            <span className="text-black">Clone any voice</span>
-            <br className="hidden md:block" />
-            <span className="text-gray-400"> in seconds</span>
+            <span className="text-black block">Clone any voice</span>
+            <span className="text-gray-400 block">in seconds.</span>
           </motion.h1>
         </div>
 
@@ -114,14 +113,14 @@ export function Hero() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="relative max-w-4xl mx-auto"
+          className="relative w-full max-w-xs md:max-w-4xl mx-auto mt-8 md:mt-0"
         >
           <div
             className="relative rounded-3xl overflow-hidden border border-black/10 bg-white p-6 md:p-12 shadow-2xl"
             style={{ boxShadow: "0 40px 100px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.5)" }}
           >
             {/* 3D Waveform */}
-            <div className="flex gap-2 h-48 items-end justify-center">
+            <div className="flex gap-0.5 md:gap-2 h-20 md:h-48 items-end justify-center overflow-hidden">
               {[...Array(60)].map((_, i) => {
                 const height = Math.sin(i * 0.2) * 40 + 50;
                 return (
