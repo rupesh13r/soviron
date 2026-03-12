@@ -46,7 +46,6 @@ export default function Dashboard() {
   const [genError, setGenError] = useState<string | null>(null);
   const [genStatus, setGenStatus] = useState('');
   // Audio handling state and refs
-  const audioContextRef = useRef<AudioContext | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [generationComplete, setGenerationComplete] = useState(false);
 
@@ -185,11 +184,6 @@ export default function Dashboard() {
   const handleGenerate = async () => {
     if (!text.trim()) { setGenError('Please enter some text.'); return; }
     if (text.length > charsRemaining) { setGenError('Not enough characters remaining. Please upgrade.'); return; }
-
-    // Create the AudioContext at the very start of handleGenerate BEFORE any await calls
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    await audioCtx.resume(); // Ensure it's not suspended
-    audioContextRef.current = audioCtx;
     
     setGenerating(true); 
     setGenError(null); 
@@ -279,25 +273,28 @@ export default function Dashboard() {
                 else if (dataObj.type === 'chunk') {
                     setGenStatus(`Generating chunk ${dataObj.index} of ${dataObj.total}...`);
                     
-                    const binaryString = window.atob(dataObj.audio_b64);
-                    const len = binaryString.length;
-                    const bytes = new Uint8Array(len);
-                    for (let i = 0; i < len; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
+                    const byteChars = window.atob(dataObj.audio_b64);
+                    const byteNumbers = new Array(byteChars.length);
+                    for (let i = 0; i < byteChars.length; i++) {
+                        byteNumbers[i] = byteChars.charCodeAt(i);
                     }
+                    const byteArray = new Uint8Array(byteNumbers);
                     
-                    const blob = new Blob([bytes], { type: `audio/${format}` });
+                    const blob = new Blob([byteArray], { type: `audio/${format}` });
                     const newUrl = URL.createObjectURL(blob);
                     
                     // Store current playback time before updating src
                     if (audioRef.current) {
                         const isPlaying = !audioRef.current.paused;
-                        const currentTime = audioRef.current.currentTime;
+                        const currentTime = audioRef.current.currentTime || 0;
                         audioRef.current.dataset.resumeTime = currentTime.toString();
                         audioRef.current.dataset.resumePlaying = isPlaying ? 'true' : 'false';
                     }
                     
-                    setAudioUrl(newUrl);
+                    setAudioUrl(prevUrl => {
+                        if (prevUrl) URL.revokeObjectURL(prevUrl);
+                        return newUrl;
+                    });
                 }
                 else if (dataObj.type === 'done') {
                     setGenStatus(`Generation complete ✓`);
