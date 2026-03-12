@@ -45,6 +45,16 @@ export default function Dashboard() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [genError, setGenError] = useState<string | null>(null);
   const [genStatus, setGenStatus] = useState('');
+  // Audio handling state and refs
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const audioBufferRef = useRef<AudioBuffer | null>(null);
+  const playbackStartTimeRef = useRef<number>(0);
+  const playbackOffsetRef = useRef<number>(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [generationComplete, setGenerationComplete] = useState(false);
+  const [isDonePlaying, setIsDonePlaying] = useState(false);
+  const [currentTimeDisplay, setCurrentTimeDisplay] = useState(0);
 
   // Clone tab
   const [voices, setVoices] = useState<Voice[]>([]);
@@ -177,119 +187,259 @@ export default function Dashboard() {
   const charsRemaining = profile ? profile.chars_limit - profile.chars_used : 0;
   const charsPercent = profile ? Math.min((profile.chars_used / profile.chars_limit) * 100, 100) : 0;
 
-  // BACKENDS in priority order — frontend tries each until one succeeds
-  const BACKENDS = [
-    { name: 'Cerebrium', url: 'https://api.aws.us-east-1.cerebrium.ai/v4/p-c85ac149/soviron-tts' },
-    { name: 'GCP VM', url: 'http://35.206.231.152:8000' },
-  ];
-
+  // Minimax Progressive Audio Stream Handler
   const handleGenerate = async () => {
     if (!text.trim()) { setGenError('Please enter some text.'); return; }
     if (text.length > charsRemaining) { setGenError('Not enough characters remaining. Please upgrade.'); return; }
-    setGenerating(true); setGenError(null); setAudioUrl(null); setGenStatus('');
+    
+    setGenerating(true); 
+    setGenError(null); 
+    setGenStatus('Warming up... starting stream');
+    setGenerationComplete(false);
+    setAudioUrl(null);
+    setIsPlaying(false);
+    setIsDonePlaying(false);
+    setCurrentTimeDisplay(0);
 
-    // Build FormData once
-    const buildFormData = async () => {
-      const formData = new FormData();
-      formData.append('text', text);
-      if (selectedVoice && isPaid) {
-        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-          .from('voices').createSignedUrl(selectedVoice.file_path, 60);
-        if (signedUrlError) throw new Error('Could not fetch saved voice');
-        const voiceRes = await fetch(signedUrlData.signedUrl);
-        const voiceBlob = await voiceRes.blob();
-        const voiceFile = new File([voiceBlob], 'voice.wav', { type: 'audio/wav' });
-        formData.append('audio_prompt', voiceFile);
-      } else if (sessionVoiceFile) {
-        formData.append('audio_prompt', sessionVoiceFile);
-      }
-      formData.append('speed', speed.toString());
-      formData.append('pitch', pitch.toString());
-      formData.append('exaggeration', emotion.toString());
-      formData.append('format', format);
-      return formData;
-    };
+    // Stop any existing audio context immediately
+    if (audioSourceRef.current) {
+        audioSourceRef.current.stop();
+        audioSourceRef.current.disconnect();
+        audioSourceRef.current = null;
+    }
+    if (audioContextRef.current) {
+        audioContextRef.current.close().catch(() => {});
+        audioContextRef.current = null;
+    }
+    audioBufferRef.current = null;
+    playbackOffsetRef.current = 0;
+    
+    let warmingUpTimer: NodeJS.Timeout | null = setTimeout(() => {
+        setGenStatus('Warming up server... please wait a few seconds');
+    }, 10000);
 
     try {
-      const formData = await buildFormData();
-      let success = false;
+      // 1. Prepare payload exactly like /api/tts expects
+      // Note: NEXT_PUBLIC_CEREBRIUM_API_KEY is no longer used here;
+      // Backend /api/tts uses env.CEREBRIUM_API_KEY invisibly
+      
+      const body: any = { 
+        text, 
+        speed: parseFloat(Number(speed).toFixed(2)), 
+        pitch: parseFloat(Number(pitch).toFixed(2)), 
+        exaggeration: parseFloat(Number(emotion).toFixed(2)), 
+        format: String(format) 
+      };
 
-      for (const backend of BACKENDS) {
-        try {
-          setGenStatus(backend.name === 'Cerebrium'
-            ? 'Warming up servers... this may take up to 60 seconds on first use.'
-            : `Trying backup server (${backend.name})...`
-          );
+      if (sessionVoiceFile) {
+        const reader = new FileReader();
+        const audioB64 = await new Promise<string>((resolve) => {
+          reader.onload = () => resolve((reader.result as string).split(',')[1]);
+          reader.readAsDataURL(sessionVoiceFile);
+        });
+        body.audio_prompt_b64 = audioB64;
+      } else if (selectedVoice && isPaid) {
+        body.voice_id = selectedVoice.id; // API proxies this internally now
+      }
 
-          if (backend.name === 'Cerebrium') {
-            // Cerebrium expects JSON with base64 audio
-            const body: any = { text, speed: parseFloat(Number(speed).toFixed(2)), pitch: parseFloat(Number(pitch).toFixed(2)), exaggeration: parseFloat(Number(emotion).toFixed(2)), format: String(format) };
-            if (sessionVoiceFile) {
-              const reader = new FileReader();
-              const audioB64 = await new Promise<string>((resolve) => {
-                reader.onload = () => resolve((reader.result as string).split(',')[1]);
-                reader.readAsDataURL(sessionVoiceFile);
-              });
-              body.audio_prompt_b64 = audioB64;
-            } else if (selectedVoice && isPaid) {
-              const { data: signedUrlData } = await supabase.storage
-                .from('voices').createSignedUrl(selectedVoice.file_path, 60);
-              if (signedUrlData) {
-                const voiceRes = await fetch(signedUrlData.signedUrl);
-                const voiceBlob = await voiceRes.blob();
-                const reader = new FileReader();
-                const audioB64 = await new Promise<string>((resolve) => {
-                  reader.onload = () => resolve((reader.result as string).split(',')[1]);
-                  reader.readAsDataURL(voiceBlob);
-                });
-                body.audio_prompt_b64 = audioB64;
-              }
+      // Fetch temporary API key representing User Session (To authenticate against /api/tts natively)
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Request Internal API proxy
+      const res = await fetch(`/api/tts-internal`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || 'Server error. Please try again.');
+      }
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("Stream closed instantly.");
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+      
+      // Native audio loop helpers
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        
+        while (buffer.includes('\n\n')) {
+            const splitPoint = buffer.indexOf('\n\n') + 2;
+            const message = buffer.slice(0, splitPoint);
+            buffer = buffer.slice(splitPoint);
+
+            if (message.startsWith('data: ')) {
+                const dataStr = message.replace('data: ', '').trim();
+                let dataObj;
+                try {
+                   dataObj = JSON.parse(dataStr);
+                } catch(e) { continue; }
+
+                if (warmingUpTimer) {
+                    clearTimeout(warmingUpTimer);
+                    warmingUpTimer = null;
+                }
+
+                if (dataObj.type === 'error') {
+                    throw new Error(dataObj.message || 'Error occurred during generation');
+                }
+                else if (dataObj.type === 'chunk') {
+                    setGenStatus(`Generating chunk ${dataObj.index} of ${dataObj.total}...`);
+                    
+                    // Decode B64 Audio Buffer dynamically mapped over
+                    const binaryString = window.atob(dataObj.audio_b64);
+                    const len = binaryString.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    
+                    // Update latest complete file blob continuously
+                    const blob = new Blob([bytes], { type: `audio/${format}` });
+                    setAudioUrl(URL.createObjectURL(blob));
+
+                    const ctx = audioContextRef.current;
+                    if (!ctx) continue;
+
+                    // Decode completely independently per buffer array bounds synchronously overlapping Audio track outputs directly
+                    ctx.decodeAudioData(bytes.buffer, (newAudioBuffer) => {
+                        handleNewChunkAudio(newAudioBuffer, ctx);
+                    }, (e) => console.log('Decode error', e));
+                }
+                else if (dataObj.type === 'done') {
+                    setGenStatus(`Generation complete ✓`);
+                    setGenerationComplete(true);
+                    
+                    // Cleanup user session files
+                    setSessionVoiceFile(null);
+                    setSessionVoiceFileName('');
+
+                    // Increment quotas safely relying on server payload
+                    await supabase.from('profiles').update({ chars_used: (profile?.chars_used || 0) + text.length }).eq('id', user.id);
+                    setProfile((prev: any) => ({ ...prev, chars_used: (prev?.chars_used || 0) + text.length }));
+                }
             }
-            const res = await fetch(`${backend.url}/generate`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CEREBRIUM_API_KEY}` },
-              body: JSON.stringify(body),
-            });
-            if (res.ok) {
-              const json = await res.json();
-              const result = json.result || json; // Cerebrium wraps in result field
-              const audioBytes = Uint8Array.from(atob(result.audio_b64), c => c.charCodeAt(0));
-              const blob = new Blob([audioBytes], { type: result.media_type });
-              setAudioUrl(URL.createObjectURL(blob));
-              await supabase.from('profiles').update({ chars_used: (profile?.chars_used || 0) + text.length }).eq('id', user.id);
-              setProfile((prev: any) => ({ ...prev, chars_used: (prev?.chars_used || 0) + text.length }));
-              setGenStatus(''); success = true; break;
-            }
-          } else {
-            // Modal and GCP VM — FormData, binary response
-            const res = await fetch(`${backend.url}/generate`, { method: 'POST', body: formData });
-            if (res.ok) {
-              const blob = await res.blob();
-              setAudioUrl(URL.createObjectURL(blob));
-              await supabase.from('profiles').update({ chars_used: (profile?.chars_used || 0) + text.length }).eq('id', user.id);
-              setProfile((prev: any) => ({ ...prev, chars_used: (prev?.chars_used || 0) + text.length }));
-              setGenStatus(''); success = true; break;
-            }
-          }
-        } catch {
-          continue;
         }
       }
 
-      if (!success) {
-        setGenError('All servers are currently busy. Please try again in a moment.');
-      } else {
-        // Clear session voice after successful generation to prevent bleeding between users
-        setSessionVoiceFile(null);
-        setSessionVoiceFileName('');
-      }
-    } catch {
-      setGenError('Generation failed. Please try again.');
+    } catch (e: any) {
+      setGenError(e.message || 'Generation layout failed securely intercepting streaming chunks.');
     } finally {
+      if (warmingUpTimer) clearTimeout(warmingUpTimer);
       setGenerating(false);
-      setGenStatus('');
+      // Ensure "Generating" status vanishes when done
+      if (generationComplete) setGenStatus('');
     }
   };
+
+  const handleNewChunkAudio = (newBuffer: AudioBuffer, ctx: AudioContext) => {
+      // Remember where we were playback-wise
+      const currentLoc = isPlaying ? (ctx.currentTime - playbackStartTimeRef.current + playbackOffsetRef.current) % (audioBufferRef.current?.duration || 1) : playbackOffsetRef.current;
+      
+      const wasPlaying = isPlaying;
+      
+      if (audioSourceRef.current) {
+          audioSourceRef.current.stop();
+          audioSourceRef.current.disconnect();
+      }
+
+      audioBufferRef.current = newBuffer;
+      const source = ctx.createBufferSource();
+      source.buffer = newBuffer;
+      source.connect(ctx.destination);
+      
+      source.onended = () => {
+         // Auto toggle when done natively avoiding premature ends
+         // If generation isn't complete, it just waits for next chunk update.
+         if (generationComplete && (ctx.currentTime - playbackStartTimeRef.current + playbackOffsetRef.current >= newBuffer.duration - 0.1)) {
+             setIsPlaying(false);
+             setIsDonePlaying(true);
+             playbackOffsetRef.current = 0; 
+         }
+      };
+
+      audioSourceRef.current = source;
+
+      if (wasPlaying || !audioBufferRef.current /* Force play on First chunk */) {
+         if (!wasPlaying && !audioBufferRef.current) {
+             setIsPlaying(true);
+         }
+         
+         const startLoc = Math.min(currentLoc, newBuffer.duration);
+         source.start(0, startLoc);
+         playbackStartTimeRef.current = ctx.currentTime;
+         playbackOffsetRef.current = startLoc;
+      }
+  };
+
+  const togglePlayback = () => {
+      const ctx = audioContextRef.current;
+      if (!ctx || !audioBufferRef.current) {
+          // If we have an audioUrl but no Context (like if user left tab), we just use standard audioUrl native below layout bounds
+          return;
+      }
+
+      if (isPlaying) {
+          // Pause logic
+          if (audioSourceRef.current) {
+              audioSourceRef.current.stop();
+          }
+          playbackOffsetRef.current += (ctx.currentTime - playbackStartTimeRef.current);
+          setIsPlaying(false);
+      } else {
+          // Play logic 
+          if (isDonePlaying) {
+              playbackOffsetRef.current = 0;
+              setIsDonePlaying(false);
+          }
+          
+          const source = ctx.createBufferSource();
+          source.buffer = audioBufferRef.current;
+          source.connect(ctx.destination);
+          
+          source.onended = () => {
+              if (generationComplete && (ctx.currentTime - playbackStartTimeRef.current + playbackOffsetRef.current >= audioBufferRef.current!.duration - 0.1)) {
+                 setIsPlaying(false);
+                 setIsDonePlaying(true);
+                 playbackOffsetRef.current = 0; 
+              }
+          };
+          
+          audioSourceRef.current = source;
+          const loc = playbackOffsetRef.current % audioBufferRef.current.duration;
+          source.start(0, loc);
+          playbackStartTimeRef.current = ctx.currentTime;
+          setIsPlaying(true);
+      }
+  };
+  
+  // Update time display dynamically
+  useEffect(() => {
+      let interval: NodeJS.Timeout;
+      if (isPlaying) {
+          interval = setInterval(() => {
+              const ctx = audioContextRef.current;
+              if (ctx) {
+                  let time = (ctx.currentTime - playbackStartTimeRef.current) + playbackOffsetRef.current;
+                  if (audioBufferRef.current && time > audioBufferRef.current.duration) time = audioBufferRef.current.duration;
+                  setCurrentTimeDisplay(time);
+              }
+          }, 100);
+      }
+      return () => clearInterval(interval);
+  }, [isPlaying]);
 
   const handleSaveVoice = async () => {
     if (!cloneFile) { setCloneError('Please upload a voice sample.'); return; }
@@ -770,16 +920,41 @@ export default function Dashboard() {
                   <div className="dash-card dash-card-accent">
                     <p className="dash-card-title">04 — Generate</p>
                     <button className="dash-gen-btn" onClick={handleGenerate} disabled={generating || !text.trim() || text.length > 40000}>
-                      {generating ? 'Generating...' : 'Generate Speech →'}
+                      {generating ? (
+                          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                             Generating... 
+                             <motion.div animate={{ opacity:[0.3,1,0.3] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-white rounded-full ml-1" />
+                             <motion.div animate={{ opacity:[0.3,1,0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-white rounded-full" />
+                             <motion.div animate={{ opacity:[0.3,1,0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-white rounded-full" />
+                          </span>
+                      ) : 'Generate Speech →'}
                     </button>
-                    {generating && genStatus && <p style={{ fontSize: 13, color: '#6B7280', marginTop: 12, lineHeight: 1.6 }}>{genStatus}</p>}
+                    {genStatus && <p style={{ fontSize: 13, color: '#6B7280', marginTop: 12, lineHeight: 1.6, fontWeight: 500 }}>{genStatus}</p>}
                     {genError && <p className="dash-error-msg">{genError}</p>}
                   </div>
                   {audioUrl && (
                     <div className="dash-audio-card" style={{ marginTop: 16 }}>
                       <p className="dash-audio-label">Generated Audio</p>
-                      <audio controls src={audioUrl} />
-                      <a href={audioUrl} download={`soviron-output.${format}`} className="dash-download-btn">↓ Download {format.toUpperCase()}</a>
+                      
+                      <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, padding: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+                         <button onClick={togglePlayback} style={{ width: 40, height: 40, borderRadius: '50%', background: '#080808', color: '#FFF', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {isPlaying ? (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                            ) : (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                            )}
+                         </button>
+                         <div style={{ flex: 1, height: 4, background: 'rgba(0,0,0,0.06)', borderRadius: 2, position: 'relative' }}>
+                             <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', background: '#080808', borderRadius: 2, width: `${(audioBufferRef.current ? (currentTimeDisplay / audioBufferRef.current.duration) * 100 : 0)}%`, transition: 'width 0.1s linear' }} />
+                         </div>
+                         <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#6B7280' }}>
+                             {currentTimeDisplay.toFixed(1)}s / {audioBufferRef.current?.duration ? audioBufferRef.current.duration.toFixed(1) + 's' : '0.0s'}
+                         </div>
+                      </div>
+
+                      {generationComplete && (
+                          <a href={audioUrl} download={`soviron-output.${format}`} className="dash-download-btn">↓ Download {format.toUpperCase()}</a>
+                      )}
                     </div>
                   )}
                 </div>

@@ -1,82 +1,38 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize a supabase client with the service role key to bypass RLS
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Use dummy values during build to prevent supabaseKey is required
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const fp = searchParams.get('fp');
-
-  if (!fp) {
-    return NextResponse.json({ error: 'Fingerprint required' }, { status: 400 });
-  }
-
-  const { data, error } = await supabaseAdmin
-    .from('device_fingerprints')
-    .select('user_id')
-    .eq('fingerprint', fp)
-    .single();
-
-  if (error && error.code !== 'PGRST116') { // PGRST116 is not found
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ exists: !!data });
-}
-
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const token = authHeader.replace('Bearer ', '');
-    
-    // Verify user
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
-    if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { fingerprint } = await request.json();
+    const { fingerprint } = await req.json();
 
     if (!fingerprint) {
-      return NextResponse.json({ error: 'Fingerprint required' }, { status: 400 });
+      return NextResponse.json({ error: 'Fingerprint is required' }, { status: 400 });
     }
 
-    // 1. Check if fingerprint exists
-    const { data: existingDevice } = await supabaseAdmin
-      .from('device_fingerprints')
-      .select('user_id')
-      .eq('fingerprint', fingerprint)
-      .single();
+    const { data: profiles, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('device_fingerprint', fingerprint)
+      // Only care if ANY account exists with this physical device fingerprint
+      .limit(1);
 
-    if (existingDevice) {
-      if (existingDevice.user_id !== user.id) {
-         // This device belongs to a different user, so the current user is an alt account.
-         // Penalize: set chars_limit to 0
-         await supabaseAdmin
-           .from('profiles')
-           .update({ chars_limit: 0 })
-           .eq('id', user.id);
-      }
-    } else {
-      // 2. Register new fingerprint
-      const { error } = await supabaseAdmin
-        .from('device_fingerprints')
-        .insert({ fingerprint, user_id: user.id });
-        
-      if (error && error.code !== '23505') { // Ignore unique violation
-          console.error("Error inserting fingerprint", error);
-      }
+    if (error) {
+      console.error('Supabase error checking fingerprint:', error);
+      return NextResponse.json({ error: 'Database query failed' }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // Determine if fingerprint exists
+    const hasAccount = profiles && profiles.length > 0;
+
+    return NextResponse.json({ hasAccount });
+
+  } catch (err: any) {
+    console.error('Check fingerprint error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

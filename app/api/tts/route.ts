@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 // Use dummy values during build to prevent supabaseKey is required
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   try {
     const apiKey = req.headers.get('x-api-key');
     if (!apiKey) {
-      return NextResponse.json({ error: 'Missing API key. Pass it as x-api-key header.' }, { status: 401 });
+      return new Response(JSON.stringify({ error: 'Missing API key. Pass it as x-api-key header.' }), { status: 401 });
     }
 
     const { data: keyData } = await supabase
@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
       .eq('key', apiKey)
       .single();
 
-    if (!keyData) return NextResponse.json({ error: 'Invalid API key.' }, { status: 401 });
-    if (!keyData.is_active) return NextResponse.json({ error: 'API key is revoked.' }, { status: 401 });
+    if (!keyData) return new Response(JSON.stringify({ error: 'Invalid API key.' }), { status: 401 });
+    if (!keyData.is_active) return new Response(JSON.stringify({ error: 'API key is revoked.' }), { status: 401 });
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -32,34 +32,42 @@ export async function POST(req: NextRequest) {
       .eq('id', keyData.user_id)
       .single();
 
-    if (!profile) return NextResponse.json({ error: 'User not found.' }, { status: 404 });
+    if (!profile) return new Response(JSON.stringify({ error: 'User not found.' }), { status: 404 });
 
     if (!ALLOWED_PLANS.includes(profile.plan)) {
-      return NextResponse.json({
+      return new Response(JSON.stringify({
         error: 'API access requires Creator, Pro, or Studio plan.',
         upgrade_url: 'https://soviron.vercel.app/pricing'
-      }, { status: 403 });
+      }), { status: 403 });
     }
 
     const body = await req.json();
-    const { text, speed = 1.0, pitch = 0, voice_id } = body;
+    const { text, speed = 1.0, pitch = 0, voice_id, format = 'mp3', exaggeration = 0.5, seed } = body;
 
-    if (!text) return NextResponse.json({ error: 'text field is required.' }, { status: 400 });
-    if (text.length > 50000) return NextResponse.json({ error: 'Text exceeds 50,000 character limit.' }, { status: 400 });
+    if (!text) return new Response(JSON.stringify({ error: 'text field is required.' }), { status: 400 });
+    if (text.length > 50000) return new Response(JSON.stringify({ error: 'Text exceeds 50,000 character limit.' }), { status: 400 });
 
     const charsRemaining = profile.chars_limit - profile.chars_used;
     if (text.length > charsRemaining) {
-      return NextResponse.json({
+      return new Response(JSON.stringify({
         error: 'Insufficient characters remaining.',
         chars_remaining: charsRemaining,
         chars_requested: text.length
-      }, { status: 402 });
+      }), { status: 402 });
     }
 
-    const formData = new FormData();
-    formData.append('text', text);
-    formData.append('speed', speed.toString());
-    formData.append('pitch', pitch.toString());
+    // Prepare Cerebrium payload
+    const cerebriumBody: any = {
+      text,
+      speed: parseFloat(Number(speed).toFixed(2)),
+      pitch: parseFloat(Number(pitch).toFixed(2)),
+      exaggeration: parseFloat(Number(exaggeration).toFixed(2)),
+      format: String(format),
+    };
+    
+    if (seed !== undefined) {
+      cerebriumBody.seed = seed;
+    }
 
     // Voice cloning — fetch saved voice from Supabase Storage
     if (voice_id) {
@@ -71,7 +79,7 @@ export async function POST(req: NextRequest) {
         .single();
 
       if (!voice) {
-        return NextResponse.json({ error: 'Voice not found or does not belong to your account.' }, { status: 404 });
+        return new Response(JSON.stringify({ error: 'Voice not found or does not belong to your account.' }), { status: 404 });
       }
 
       const { data: signedUrlData, error: signedUrlError } = await supabase.storage
@@ -79,24 +87,35 @@ export async function POST(req: NextRequest) {
         .createSignedUrl(voice.file_path, 60);
 
       if (signedUrlError || !signedUrlData) {
-        return NextResponse.json({ error: 'Could not fetch voice file.' }, { status: 500 });
+        return new Response(JSON.stringify({ error: 'Could not fetch voice file.' }), { status: 500 });
       }
 
       const voiceRes = await fetch(signedUrlData.signedUrl);
       const voiceBlob = await voiceRes.blob();
-      const voiceFile = new File([voiceBlob], 'voice.wav', { type: 'audio/wav' });
-      formData.append('audio_prompt', voiceFile);
+      const reader = new FileReader(); // Need node alternative
+      
+      const audioBuffer = await voiceBlob.arrayBuffer();
+      const base64Audio = Buffer.from(audioBuffer).toString('base64');
+      cerebriumBody.audio_prompt_b64 = base64Audio;
+    } else if (body.audio_prompt_b64) {
+      cerebriumBody.audio_prompt_b64 = body.audio_prompt_b64;
     }
 
-    const vmRes = await fetch(`${process.env.NEXT_PUBLIC_VM_URL}/generate`, {
+    // Forward to Cerebrium exactly as streaming proxy
+    const cerebriumRes = await fetch('https://api.aws.us-east-1.cerebrium.ai/v4/p-c85ac149/soviron-tts/generate', {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.CEREBRIUM_API_KEY}`
+      },
+      body: JSON.stringify(cerebriumBody)
     });
 
-    if (!vmRes.ok) {
-      return NextResponse.json({ error: 'TTS generation failed. VM may be offline.' }, { status: 503 });
+    if (!cerebriumRes.ok || !cerebriumRes.body) {
+      return new Response(JSON.stringify({ error: 'TTS generation failed. Cerebrium service error.' }), { status: 503 });
     }
 
+    // Update characters used immediately
     await supabase.from('profiles').update({
       chars_used: profile.chars_used + text.length
     }).eq('id', keyData.user_id);
@@ -105,12 +124,31 @@ export async function POST(req: NextRequest) {
       last_used: new Date().toISOString()
     }).eq('key', apiKey);
 
-    const audioBuffer = await vmRes.arrayBuffer();
-    return new NextResponse(audioBuffer, {
-      status: 200,
+    // Transform Cerebrium JSON-L stream out into an SSE stream
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    const transformStream = new TransformStream({
+      transform(chunk, controller) {
+        const textChunk = decoder.decode(chunk, { stream: true });
+        // Cerebrium returns newline separated JSON
+        const lines = textChunk.split('\n');
+        for (const line of lines) {
+          if (line.trim()) {
+            // Forward as SSE event
+            controller.enqueue(encoder.encode(`data: ${line.trim()}\n\n`));
+          }
+        }
+      }
+    });
+
+    const stream = cerebriumRes.body.pipeThrough(transformStream);
+
+    return new Response(stream, {
       headers: {
-        'Content-Type': 'audio/wav',
-        'Content-Disposition': 'attachment; filename="soviron-output.wav"',
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
         'X-Chars-Used': text.length.toString(),
         'X-Chars-Remaining': (charsRemaining - text.length).toString(),
       }
@@ -118,20 +156,23 @@ export async function POST(req: NextRequest) {
 
   } catch (err) {
     console.error('API error:', err);
-    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error.' }), { status: 500 });
   }
 }
 
 export async function GET() {
-  return NextResponse.json({
+  return new Response(JSON.stringify({
     name: 'Soviron TTS API',
-    version: '1.0',
+    version: '2.0',
     docs: 'https://soviron.vercel.app/api-docs',
     usage: {
       method: 'POST',
       headers: { 'x-api-key': 'your-api-key', 'Content-Type': 'application/json' },
       body: { text: 'Hello world', speed: 1.0, pitch: 0, voice_id: 'optional-saved-voice-uuid' },
-      response: 'audio/wav binary'
+      response: 'text/event-stream progressive chunks'
     }
+  }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' }
   });
 }
