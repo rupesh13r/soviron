@@ -485,12 +485,16 @@ export default function Dashboard() {
         .dash-key-gen-row { display: flex; gap: 8px; }
 
         /* RESPONSIVE */
+        .dash-top-nav { position: absolute; right: 52px; top: 48px; z-index: 50; }
+        .dash-mobile-quota { display: none; }
         @media (max-width: 900px) {
+          .dash-top-nav { position: relative; right: auto; top: auto; display: flex; justify-content: flex-end; margin-bottom: 24px; width: 100%; z-index: 50; }
           .dash-sidebar { display: none; }
-          .dash-main { margin-left: 0; padding: 24px 16px; padding-bottom: 100px; width: 100%; }
+          .dash-main { margin-left: 0; padding: 24px 16px; padding-bottom: 100px; width: 100%; display: flex; flex-direction: column; }
+          .dash-mobile-quota { display: block; padding: 20px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); background: #FFFFFF; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 16px; width: 100%; }
           .dash-two-col, .dash-clone-grid, .dash-key-gen-row { grid-template-columns: 1fr; flex-direction: column; }
           .dash-card { padding: 24px 20px; }
-          .dash-page-header { margin-bottom: 24px; }
+          .dash-page-header { margin-bottom: 24px; width: 100%; }
           .dash-page-title { font-size: 32px; }
         }
 
@@ -550,7 +554,7 @@ export default function Dashboard() {
         <main className="dash-main">
 
           {/* ── TOP NAV DROPDOWN ── */}
-          <div className="absolute right-[52px] top-[48px] z-50">
+          <div className="dash-top-nav">
             {user && (
               <div className="flex items-center gap-3" style={{ position: 'relative' }}>
                 <div className="relative" ref={dropdownRef}>
@@ -625,6 +629,10 @@ export default function Dashboard() {
 
           {/* ── MOBILE BOTTOM NAV ── */}
           <nav className="dash-mobile-nav">
+            <a href="/" className="dash-mobile-nav-btn" style={{ textDecoration: 'none' }}>
+              <div className="dash-mobile-nav-icon">🏠</div>
+              <span>Home</span>
+            </a>
             <button className={`dash-mobile-nav-btn ${tab === 'generate' ? 'active' : ''}`} onClick={() => setTab('generate')}>
               <div className="dash-mobile-nav-icon">✨</div>
               <span>Generate</span>
@@ -637,6 +645,10 @@ export default function Dashboard() {
               <div className="dash-mobile-nav-icon">👤</div>
               <span>Voices</span>
             </button>
+            <a href="/pricing" className="dash-mobile-nav-btn" style={{ textDecoration: 'none' }}>
+              <div className="dash-mobile-nav-icon">⭐</div>
+              <span>Upgrade</span>
+            </a>
             <button className={`dash-mobile-nav-btn ${tab === 'api' ? 'active' : ''}`} onClick={() => setTab('api')}>
               <div className="dash-mobile-nav-icon">⚡</div>
               <span>API</span>
@@ -682,6 +694,21 @@ export default function Dashboard() {
                       <span>{charsRemaining.toLocaleString()} remaining</span>
                     </div>
                   </div>
+
+                  {/* MOBILE QUOTA CARD */}
+                  <div className="dash-mobile-quota">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10 }}>
+                      <div>
+                        <p className="dash-quota-plan">{profile?.plan || 'free'} plan</p>
+                        <p className="dash-quota-num" style={{ fontSize: '24px' }}>{charsRemaining.toLocaleString()}</p>
+                      </div>
+                      <p className="dash-quota-sub" style={{ margin: 0 }}>chars remaining</p>
+                    </div>
+                    <div className="dash-quota-track">
+                      <div className="dash-quota-fill" style={{ width: `${charsPercent}%` }} />
+                    </div>
+                  </div>
+
                   <div className="dash-card" style={{ marginBottom: 16 }}>
                     <p className="dash-card-title">02 — Select Voice</p>
                     {voices.length > 0 ? (
