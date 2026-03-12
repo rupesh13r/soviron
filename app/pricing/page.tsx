@@ -40,14 +40,37 @@ export default function PricingPage() {
         setUser(session.user);
         const { data } = await supabase.from('profiles').select('plan').eq('id', session.user.id).single();
         if (data) setCurrentPlan(data.plan || 'free');
+      } else {
+        setUser(null);
+        setCurrentPlan('free');
       }
     };
     getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setUser(session.user);
+        supabase.from('profiles').select('plan').eq('id', session.user.id).single().then(({ data }) => {
+          if (data) setCurrentPlan(data.plan || 'free');
+        });
+      } else {
+        setUser(null);
+        setCurrentPlan('free');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handlePlanClick = async (planKey: string | null, ctaHref: string | null) => {
-    if (!planKey) { window.location.href = ctaHref!; return; }
-    if (!user) { window.location.href = `/signup?plan=${planKey}`; return; }
+    if (!user) {
+      window.location.href = planKey ? `/signup?plan=${planKey}` : (ctaHref || '/signup');
+      return;
+    }
+    if (!planKey) {
+      window.location.href = '/dashboard';
+      return;
+    }
     setLoading(planKey);
     try {
       await loadRazorpayScript();

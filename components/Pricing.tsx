@@ -4,6 +4,18 @@ import { Check, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
+declare global { interface Window { Razorpay: any; } }
+
+const loadRazorpayScript = () => new Promise<void>((resolve) => {
+  if (typeof window === 'undefined') { resolve(); return; }
+  if (document.getElementById('razorpay-script')) { resolve(); return; }
+  const s = document.createElement('script');
+  s.id = 'razorpay-script';
+  s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+  s.onload = () => resolve();
+  document.body.appendChild(s);
+});
+
 const plans = [
   {
     name: "Free",
@@ -87,21 +99,112 @@ const plans = [
 ];
 
 const topups = [
-  { chars: "50,000", price: "79" },
-  { chars: "200,000", price: "249" },
-  { chars: "1,000,000", price: "799" },
+  { chars: "50k", price: "79", topupKey: "50k" },
+  { chars: "200k", price: "249", topupKey: "200k" },
+  { chars: "1M", price: "799", topupKey: "1m" },
 ];
 
 export function Pricing() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState<string | null>(null);
 
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setIsLoggedIn(!!session);
+      if (session) {
+        setIsLoggedIn(true);
+        setUser(session.user);
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
     };
     checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setIsLoggedIn(true);
+        setUser(session.user);
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const handlePlanClick = async (planName: string, price: string) => {
+    if (!user) {
+      window.location.href = price === "0" ? '/signup' : `/signup?plan=${planName.toLowerCase()}`;
+      return;
+    }
+    if (price === "0") {
+      window.location.href = '/dashboard';
+      return;
+    }
+    
+    const planKey = planName.toLowerCase();
+    setLoading(planKey);
+    try {
+      await loadRazorpayScript();
+      const res = await fetch('/api/razorpay/create-subscription', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: planKey }),
+      });
+      const { subscription_id, key } = await res.json();
+      const options = {
+        key, subscription_id, name: 'Soviron',
+        description: `${planName} Plan`,
+        handler: async (response: any) => {
+          const verifyRes = await fetch('/api/razorpay/verify', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...response, plan: planKey }),
+          });
+          const result = await verifyRes.json();
+          if (result.success) window.location.href = '/dashboard';
+          else alert('Payment verification failed. Contact support.');
+        },
+        prefill: { email: user?.email },
+        theme: { color: '#080808' },
+      };
+      new window.Razorpay(options).open();
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const handleTopupClick = async (topupKey: string, price: string) => {
+    if (!user) { window.location.href = '/login'; return; }
+    setLoading(`topup-${topupKey}`);
+    try {
+      await loadRazorpayScript();
+      const res = await fetch('/api/razorpay/create-topup', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topup: topupKey }),
+      });
+      const { order_id, amount, key } = await res.json();
+      const options = {
+        key, amount, currency: 'INR', order_id, name: 'Soviron',
+        description: `Top-up ${topupKey} characters`,
+        handler: async (response: any) => {
+          const verifyRes = await fetch('/api/razorpay/verify-topup', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...response, topup: topupKey }),
+          });
+          const result = await verifyRes.json();
+          if (result.success) window.location.href = '/dashboard';
+          else alert('Top-up verification failed. Contact support.');
+        },
+        prefill: { email: user?.email },
+        theme: { color: '#080808' },
+      };
+      new window.Razorpay(options).open();
+    } finally {
+      setLoading(null);
+    }
+  };
 
   return (
     <section id="pricing" className="relative py-20 md:py-32 px-4 sm:px-6 bg-gradient-to-b from-white to-gray-50 w-full overflow-hidden">
@@ -162,16 +265,17 @@ export function Pricing() {
                   </div>
                 </div>
 
-                <a
-                  href={isLoggedIn ? "/pricing" : (plan.price === "0" ? "/signup" : `/signup?plan=${plan.name.toLowerCase()}`)}
+                <button
+                  onClick={() => handlePlanClick(plan.name, plan.price)}
+                  disabled={loading === plan.name.toLowerCase()}
                   className={`block w-full py-4 rounded-xl font-semibold mb-8 transition-all text-center ${
                     plan.highlighted
                       ? "bg-black text-white shadow-xl shadow-black/20 hover:scale-105"
                       : "bg-gray-100 text-black border border-black/10 hover:bg-gray-200"
                   }`}
                 >
-                  {plan.cta}
-                </a>
+                  {loading === plan.name.toLowerCase() ? 'Loading...' : plan.cta}
+                </button>
 
                 <div className="space-y-4">
                   {plan.features.map((feature) => (
@@ -217,7 +321,13 @@ export function Pricing() {
                   <div className="text-lg font-bold text-black">{topup.chars} chars</div>
                   <div className="text-sm text-gray-500">one-time</div>
                 </div>
-                <div className="text-2xl font-bold text-black">₹{topup.price}</div>
+                <button
+                  onClick={() => handleTopupClick(topup.topupKey, topup.price)}
+                  disabled={loading === `topup-${topup.topupKey}`}
+                  className="px-4 py-2 bg-black text-white rounded-lg font-semibold text-sm hover:scale-105 transition-all shadow-md"
+                >
+                  {loading === `topup-${topup.topupKey}` ? 'Loading...' : `₹${topup.price}`}
+                </button>
               </motion.div>
             ))}
           </div>
