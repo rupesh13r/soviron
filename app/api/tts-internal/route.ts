@@ -74,14 +74,21 @@ export async function POST(req: NextRequest) {
 
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
+    let lineBuffer = '';
     const transformStream = new TransformStream({
       transform(chunk, controller) {
-        const textChunk = decoder.decode(chunk, { stream: true });
-        const lines = textChunk.split('\n');
+        lineBuffer += decoder.decode(chunk, { stream: true });
+        const lines = lineBuffer.split('\n');
+        lineBuffer = lines.pop() ?? '';
         for (const line of lines) {
           if (line.trim()) {
             controller.enqueue(encoder.encode(`data: ${line.trim()}\n\n`));
           }
+        }
+      },
+      flush(controller) {
+        if (lineBuffer.trim()) {
+          controller.enqueue(encoder.encode(`data: ${lineBuffer.trim()}\n\n`));
         }
       }
     });
