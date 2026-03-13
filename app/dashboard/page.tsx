@@ -47,6 +47,7 @@ export default function Dashboard() {
   const [genStatus, setGenStatus] = useState('');
   // Audio handling state and refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioChunksRef = useRef<Uint8Array[]>([]);
   const [generationComplete, setGenerationComplete] = useState(false);
 
   // Clone tab
@@ -91,8 +92,6 @@ export default function Dashboard() {
       const fp = localStorage.getItem('device_fp');
       if (fp) {
         try {
-          // Send fingerprint to backend to verify and record ownership
-          // The backend determines if it's already owned by another user and sets limits accordingly
           await fetch('/api/check-fingerprint', {
             method: 'POST',
             headers: {
@@ -109,7 +108,6 @@ export default function Dashboard() {
         }
       }
 
-      // Clear any leftover voice state from previous session
       setSelectedVoice(null);
       setSessionVoiceFile(null);
       setSessionVoiceFileName('');
@@ -166,7 +164,6 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
-    // Clear all voice state before logging out
     setSelectedVoice(null);
     setSessionVoiceFile(null);
     setSessionVoiceFileName('');
@@ -180,7 +177,6 @@ export default function Dashboard() {
   const charsRemaining = profile ? profile.chars_limit - profile.chars_used : 0;
   const charsPercent = profile ? Math.min((profile.chars_used / profile.chars_limit) * 100, 100) : 0;
 
-  // Minimax Progressive Audio Stream Handler
   const handleGenerate = async () => {
     if (!text.trim()) { setGenError('Please enter some text.'); return; }
     if (text.length > charsRemaining) { setGenError('Not enough characters remaining. Please upgrade.'); return; }
@@ -190,8 +186,8 @@ export default function Dashboard() {
     setGenStatus('Warming up... starting stream');
     setGenerationComplete(false);
     setAudioUrl(null);
+    audioChunksRef.current = [];
 
-    // Stop existing audio immediately
     if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -218,10 +214,9 @@ export default function Dashboard() {
         });
         body.audio_prompt_b64 = audioB64;
       } else if (selectedVoice && isPaid) {
-        body.voice_id = selectedVoice.id; // API proxies this internally now
+        body.voice_id = selectedVoice.id;
       }
 
-      // Fetch temporary API key representing User Session
       const { data: { session } } = await supabase.auth.getSession();
       
       const res = await fetch(`/api/tts-internal`, {
@@ -272,25 +267,26 @@ export default function Dashboard() {
                 }
                 else if (dataObj.type === 'chunk') {
                     setGenStatus(`Generating chunk ${dataObj.index} of ${dataObj.total}...`);
-                    
+
                     const byteChars = window.atob(dataObj.audio_b64);
                     const byteNumbers = new Array(byteChars.length);
                     for (let i = 0; i < byteChars.length; i++) {
                         byteNumbers[i] = byteChars.charCodeAt(i);
                     }
                     const byteArray = new Uint8Array(byteNumbers);
-                    
-                    const blob = new Blob([byteArray], { type: `audio/${format}` });
-                    const newUrl = URL.createObjectURL(blob);
-                    
-                    // Store current playback time before updating src
+
+                    // Accumulate chunks and stitch locally
+                    audioChunksRef.current.push(byteArray);
+                    const stitched = new Blob(audioChunksRef.current, { type: `audio/${format}` });
+                    const newUrl = URL.createObjectURL(stitched);
+
                     if (audioRef.current) {
                         const isPlaying = !audioRef.current.paused;
                         const currentTime = audioRef.current.currentTime || 0;
                         audioRef.current.dataset.resumeTime = currentTime.toString();
                         audioRef.current.dataset.resumePlaying = isPlaying ? 'true' : 'false';
                     }
-                    
+
                     setAudioUrl(prevUrl => {
                         if (prevUrl) URL.revokeObjectURL(prevUrl);
                         return newUrl;
@@ -315,7 +311,6 @@ export default function Dashboard() {
     } finally {
       if (warmingUpTimer) clearTimeout(warmingUpTimer);
       setGenerating(false);
-      // Ensure "Generating" status vanishes when done
       if (generationComplete) setGenStatus('');
     }
   };
@@ -608,7 +603,6 @@ export default function Dashboard() {
                         transition={{ duration: 0.15 }}
                         className="absolute right-0 top-full mt-3 min-w-[220px] bg-white rounded-2xl shadow-xl border border-black/8 overflow-hidden flex flex-col pt-3"
                       >
-                        {/* User info block */}
                         <div className="px-4 pb-3 mb-2 border-b border-black/5 flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center font-bold text-black border border-black/5">
                             {user.user_metadata?.avatar_url ? (
@@ -627,7 +621,6 @@ export default function Dashboard() {
                           </div>
                         </div>
 
-                        {/* Links */}
                         <div className="flex flex-col px-2 pb-2">
                           <a href="/pricing" className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between" style={{ textDecoration: 'none' }} onClick={() => setIsDropdownOpen(false)}>
                             Plan
