@@ -47,7 +47,7 @@ export default function Dashboard() {
   const [genStatus, setGenStatus] = useState('');
   // Audio handling state and refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioChunksRef = useRef<Uint8Array[]>([]);
+  const audioChunksRef = useRef<BlobPart[]>([]);
   const [generationComplete, setGenerationComplete] = useState(false);
 
   // Clone tab
