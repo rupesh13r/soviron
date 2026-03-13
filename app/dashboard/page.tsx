@@ -47,7 +47,7 @@ export default function Dashboard() {
   const [genStatus, setGenStatus] = useState('');
   // Audio handling state and refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioChunksRef = useRef<BlobPart[]>([]);
+  const audioChunksRef = useRef<Uint8Array[]>([]);
   const [generationComplete, setGenerationComplete] = useState(false);
 
   // Clone tab
@@ -186,7 +186,7 @@ export default function Dashboard() {
     setGenStatus('Warming up... starting stream');
     setGenerationComplete(false);
     setAudioUrl(null);
-    audioChunksRef.current = [];
+    
 
     if (audioRef.current) {
         audioRef.current.pause();
@@ -274,11 +274,9 @@ export default function Dashboard() {
                         byteNumbers[i] = byteChars.charCodeAt(i);
                     }
                     const byteArray = new Uint8Array(byteNumbers);
-
-                    // Accumulate chunks and stitch locally
-                    audioChunksRef.current.push(byteArray);
-                    const stitched = new Blob(audioChunksRef.current, { type: `audio/${format}` });
-                    const newUrl = URL.createObjectURL(stitched);
+                    
+                    const blob = new Blob([byteArray], { type: `audio/${format}` });
+                    const newUrl = URL.createObjectURL(blob);
 
                     if (audioRef.current) {
                         const isPlaying = !audioRef.current.paused;
