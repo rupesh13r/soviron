@@ -219,7 +219,7 @@ export default function Dashboard() {
 
       const { data: { session } } = await supabase.auth.getSession();
       
-      const res = await fetch(`/api/tts-internal`, {
+      const res = await fetch(`https://site--soviron-proxy--n4m2fjh72lzl.code.run/generate`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
