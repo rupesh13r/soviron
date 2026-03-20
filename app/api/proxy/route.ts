@@ -13,7 +13,7 @@ const BACKENDS = [
   },
   {
     name: 'GCP VM',
-    url: 'http://35.206.231.152:8000/generate',
+    url: 'https://35.206.231.152:8000/generate',
   },
 ];
 

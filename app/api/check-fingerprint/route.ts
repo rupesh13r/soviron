@@ -8,6 +8,10 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function POST(req: Request) {
   try {
+    // Auth check
+    const authHeader = (req as any).headers.get('authorization');
+    if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const { fingerprint } = await req.json();
 
     if (!fingerprint || typeof fingerprint !== 'string') {
