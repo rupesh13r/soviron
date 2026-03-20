@@ -123,7 +123,7 @@ export default function VoiceLibrary({ isOpen, onClose, onSelect, selectedVoiceI
         const combined = [...(defRes.data || []), ...(def2Res.data || [])];
         setDefaultVoices(combined);
         // Verification: check for duplicates and total count
-        const ids = defRes.data.map((v: DefaultVoice) => v.id);
+        const ids = combined.map((v: DefaultVoice) => v.id);
         const uniqueIds = new Set(ids);
         if (uniqueIds.size !== ids.length) console.warn('[VoiceLibrary] Duplicate voice IDs detected in data!');
         if (ids.length !== 100) console.warn(`[VoiceLibrary] Expected 100 voices, got ${ids.length}`);
