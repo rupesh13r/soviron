@@ -116,10 +116,12 @@ export default function VoiceLibrary({ isOpen, onClose, onSelect, selectedVoiceI
     setLoading(true);
     Promise.all([
       supabase.from('default_voices').select('*').eq('is_active', true).order('id'),
+      supabase.from('default_voices_2').select('*').eq('is_active', true).order('id'),
       userId ? supabase.from('voices').select('*').eq('user_id', userId).order('created_at', { ascending: false }) : Promise.resolve({ data: [] }),
-    ]).then(([defRes, cloneRes]) => {
-      if (defRes.data) {
-        setDefaultVoices(defRes.data);
+    ]).then(([defRes, def2Res, cloneRes]) => {
+      if (defRes.data || def2Res.data) {
+        const combined = [...(defRes.data || []), ...(def2Res.data || [])];
+        setDefaultVoices(combined);
         // Verification: check for duplicates and total count
         const ids = defRes.data.map((v: DefaultVoice) => v.id);
         const uniqueIds = new Set(ids);
