@@ -44,14 +44,16 @@ type FilterChip = { label: string; value: string; match: (v: DefaultVoice) => bo
 const FILTER_CHIPS: FilterChip[] = [
   { label: 'Female', value: 'female', match: v => v.gender?.toLowerCase() === 'female' },
   { label: 'Male', value: 'male', match: v => v.gender?.toLowerCase() === 'male' },
-  { label: 'British', value: 'british', match: v => v.accent?.toLowerCase().includes('english') || v.region?.toLowerCase().includes('england') },
-  { label: 'American', value: 'american', match: v => v.accent?.toLowerCase().includes('american') },
-  { label: 'Scottish', value: 'scottish', match: v => v.accent?.toLowerCase().includes('scottish') },
-  { label: 'Irish', value: 'irish', match: v => v.accent?.toLowerCase().includes('irish') },
-  { label: 'Australian', value: 'australian', match: v => v.accent?.toLowerCase().includes('australian') },
-  { label: 'Indian', value: 'indian', match: v => v.accent?.toLowerCase().includes('indian') },
+  { label: 'Hindi', value: 'hindi', match: v => v.description?.toLowerCase().includes('hindi') || v.name?.toLowerCase().includes('hindi') },
+  { label: 'Arabic', value: 'arabic', match: v => v.description?.toLowerCase().includes('arabic') || v.name?.toLowerCase().includes('arabic') },
+  { label: 'French', value: 'french', match: v => v.description?.toLowerCase().includes('french') || v.name?.toLowerCase().includes('french') },
+  { label: 'Spanish', value: 'spanish', match: v => v.description?.toLowerCase().includes('spanish') || v.name?.toLowerCase().includes('spanish') },
+  { label: 'German', value: 'german', match: v => v.description?.toLowerCase().includes('german') || v.name?.toLowerCase().includes('german') },
+  { label: 'Chinese', value: 'chinese', match: v => v.description?.toLowerCase().includes('chinese') || v.name?.toLowerCase().includes('chinese') },
+  { label: 'Japanese', value: 'japanese', match: v => v.description?.toLowerCase().includes('japanese') || v.name?.toLowerCase().includes('japanese') },
+  { label: 'English', value: 'english', match: v => v.description?.toLowerCase().includes('english') || v.name?.toLowerCase().includes('english') },
   { label: 'Young Adult', value: 'young-adult', match: v => v.age_group?.toLowerCase() === 'young-adult' },
-  { label: 'Senior', value: 'senior', match: v => v.age_group?.toLowerCase() === 'senior' },
+  { label: 'Middle Aged', value: 'middle-aged', match: v => v.age_group?.toLowerCase() === 'middle-aged' },
 ];
 
 const PAGE_SIZE = 20;
