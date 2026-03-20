@@ -18,6 +18,10 @@ const BACKENDS = [
 ];
 
 export async function POST(req: NextRequest) {
+  // Auth check
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const formData = await req.formData();
   let lastError = '';
 
