@@ -31,6 +31,23 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { text, speed = 1.0, pitch = 0, voice_id, format = 'mp3', exaggeration = 0.5, seed } = body;
 
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return NextResponse.json({ error: 'Text is required.' }, { status: 400 });
+    }
+    if (text.length > 40000) {
+      return NextResponse.json({ error: 'Text exceeds 40,000 character limit.' }, { status: 400 });
+    }
+    const allowedFormats = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a'];
+    if (!allowedFormats.includes(format)) {
+      return NextResponse.json({ error: 'Invalid format.' }, { status: 400 });
+    }
+    if (speed < 0.5 || speed > 2.0) {
+      return NextResponse.json({ error: 'Speed must be between 0.5 and 2.0.' }, { status: 400 });
+    }
+    if (pitch < -10 || pitch > 10) {
+      return NextResponse.json({ error: 'Pitch must be between -10 and 10.' }, { status: 400 });
+    }
+
     const charsRemaining = profile.chars_limit - profile.chars_used;
     if (text.length > charsRemaining) {
       return NextResponse.json({
