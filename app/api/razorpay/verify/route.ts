@@ -23,6 +23,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  // Validate plan is a known plan
+  const validPlans = Object.keys(PLAN_LIMITS);
+  if (!plan || !validPlans.includes(plan)) {
+    return NextResponse.json({ error: 'Invalid plan.' }, { status: 400 })
+  }
+
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

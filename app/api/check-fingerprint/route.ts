@@ -10,8 +10,11 @@ export async function POST(req: Request) {
   try {
     const { fingerprint } = await req.json();
 
-    if (!fingerprint) {
+    if (!fingerprint || typeof fingerprint !== 'string') {
       return NextResponse.json({ error: 'Fingerprint is required' }, { status: 400 });
+    }
+    if (fingerprint.length > 256) {
+      return NextResponse.json({ error: 'Invalid fingerprint.' }, { status: 400 });
     }
 
     const { data: profiles, error } = await supabase
