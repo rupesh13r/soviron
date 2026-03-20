@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut } from 'lucide-react';
+import VoiceLibrary, { type DefaultVoice } from '../../components/VoiceLibrary';
+import { franc } from 'franc-min';
 
 type Voice = {
   id: string;
@@ -35,10 +37,14 @@ export default function Dashboard() {
   // Generate tab
   const [text, setText] = useState('');
   const [selectedVoice, setSelectedVoice] = useState<Voice | null>(null);
+  const [selectedDefaultVoice, setSelectedDefaultVoice] = useState<DefaultVoice | null>(null);
+  const [showVoiceLibrary, setShowVoiceLibrary] = useState(false);
   const [sessionVoiceFile, setSessionVoiceFile] = useState<File | null>(null);
   const [sessionVoiceFileName, setSessionVoiceFileName] = useState('');
+  const [voiceDesign, setVoiceDesign] = useState('');
   const [speed, setSpeed] = useState(1);
   const [pitch, setPitch] = useState(0);
+  const [volume, setVolume] = useState(1.0);
   const [emotion, setEmotion] = useState(0.5);
   const [format, setFormat] = useState('mp3');
   const [generating, setGenerating] = useState(false);
@@ -198,28 +204,53 @@ export default function Dashboard() {
     }, 10000);
 
     try {
+      // Detect language automatically
+      const detectedLang = franc(text, { minLength: 10 }) || 'und';
+      const LANG_MAP: Record<string, string> = {
+        'eng': 'en', 'zho': 'zh', 'jpn': 'ja', 'kor': 'ko',
+        'deu': 'de', 'fra': 'fr', 'rus': 'ru', 'por': 'pt',
+        'spa': 'es', 'ita': 'it', 'hin': 'hi', 'ara': 'ar',
+        'tur': 'tr', 'pol': 'pl', 'nld': 'nl', 'swe': 'sv',
+        'nor': 'no', 'dan': 'da', 'fin': 'fi', 'ell': 'el',
+        'heb': 'he', 'msa': 'ms', 'swa': 'sw',
+      };
+      const language = LANG_MAP[detectedLang] || 'en';
+
       const body: any = { 
         text, 
         speed: parseFloat(Number(speed).toFixed(2)), 
         pitch: parseFloat(Number(pitch).toFixed(2)), 
+        volume: parseFloat(Number(volume).toFixed(2)),
         exaggeration: parseFloat(Number(emotion).toFixed(2)), 
-        format: String(format) 
+        format: String(format),
+        language,
       };
 
-      if (sessionVoiceFile) {
+      const QWEN3_LANGS = new Set(['en', 'zh', 'ja', 'ko', 'de', 'fr', 'ru', 'pt', 'es', 'it']);
+
+      if (voiceDesign.trim() && QWEN3_LANGS.has(language)) {
+        body.voice_design = voiceDesign.trim();
+      } else if (voiceDesign.trim() && !QWEN3_LANGS.has(language)) {
+        setGenError('Voice Design is not available for this language. Clear it or change your text language.');
+        setGenerating(false);
+        if (warmingUpTimer) clearTimeout(warmingUpTimer);
+        return;
+      } else if (sessionVoiceFile) {
         const reader = new FileReader();
         const audioB64 = await new Promise<string>((resolve) => {
           reader.onload = () => resolve((reader.result as string).split(',')[1]);
           reader.readAsDataURL(sessionVoiceFile);
         });
         body.audio_prompt_b64 = audioB64;
+      } else if (selectedDefaultVoice) {
+        body.voice_id = selectedDefaultVoice.id;
       } else if (selectedVoice && isPaid) {
         body.voice_id = selectedVoice.id;
       }
 
       const { data: { session } } = await supabase.auth.getSession();
       
-      const res = await fetch(`https://site--soviron-proxy--n4m2fjh72lzl.code.run/generate`, {
+      const res = await fetch(`https://soviron-proxy.azurewebsites.net/generate`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -549,6 +580,12 @@ export default function Dashboard() {
           <button className={`dash-nav-item ${tab === 'clone' ? 'active' : ''}`} onClick={() => setTab('clone')}>
             <span className="dash-nav-dot" />Clone a Voice
           </button>
+          <button className="dash-nav-item" onClick={() => setShowVoiceLibrary(true)}>
+            <span className="dash-nav-dot" />Voice Library
+          </button>
+          <a className="dash-nav-item" href="/voice-design" style={{ textDecoration: 'none' }}>
+            <span className="dash-nav-dot" />Voice Design
+          </a>
           <button className={`dash-nav-item ${tab === 'voices' ? 'active' : ''}`} onClick={() => setTab('voices')}>
             <span className="dash-nav-dot" />My Voices {voices.length > 0 && `(${voices.length})`}
           </button>
@@ -661,6 +698,14 @@ export default function Dashboard() {
               <div className="dash-mobile-nav-icon">🎤</div>
               <span>Clone</span>
             </button>
+            <button className="dash-mobile-nav-btn" onClick={() => setShowVoiceLibrary(true)}>
+              <div className="dash-mobile-nav-icon">📚</div>
+              <span>Library</span>
+            </button>
+            <a href="/voice-design" className="dash-mobile-nav-btn" style={{ textDecoration: 'none' }}>
+              <div className="dash-mobile-nav-icon">🎨</div>
+              <span>Design</span>
+            </a>
             <button className={`dash-mobile-nav-btn ${tab === 'voices' ? 'active' : ''}`} onClick={() => setTab('voices')}>
               <div className="dash-mobile-nav-icon">👤</div>
               <span>Voices</span>
@@ -731,25 +776,110 @@ export default function Dashboard() {
 
                   <div className="dash-card" style={{ marginBottom: 16 }}>
                     <p className="dash-card-title">02 — Select Voice</p>
-                    {voices.length > 0 ? (
+
+                    {/* Currently selected voice display */}
+                    {(selectedDefaultVoice || selectedVoice) && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, marginBottom: 14 }}>
+                        <div style={{
+                          width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#FFF', fontWeight: 700, fontSize: 13,
+                          background: selectedDefaultVoice
+                            ? `linear-gradient(135deg, hsl(${(selectedDefaultVoice.id * 37) % 360}, 65%, 55%), hsl(${((selectedDefaultVoice.id * 37) % 360 + 40) % 360}, 55%, 45%))`
+                            : `linear-gradient(135deg, hsl(${((selectedVoice?.id.charCodeAt(0) || 0) * 37) % 360}, 65%, 55%), hsl(${(((selectedVoice?.id.charCodeAt(0) || 0) * 37) % 360 + 40) % 360}, 55%, 45%))`
+                        }}>
+                          {(selectedDefaultVoice?.name || selectedVoice?.name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#080808', margin: 0 }}>{selectedDefaultVoice?.name || selectedVoice?.name}</p>
+                          <p style={{ fontSize: 11, color: '#9CA3AF', margin: 0 }}>
+                            {selectedDefaultVoice ? `${selectedDefaultVoice.accent} · ${selectedDefaultVoice.gender}` : `${selectedVoice?.language} · ${selectedVoice?.gender}`}
+                          </p>
+                        </div>
+                        <button onClick={() => { setSelectedDefaultVoice(null); setSelectedVoice(null); }} style={{
+                          padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.08)',
+                          background: 'transparent', color: '#9CA3AF', fontSize: 11, fontWeight: 600,
+                          cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s'
+                        }}>✕ Clear</button>
+                      </div>
+                    )}
+
+                    <button onClick={() => setShowVoiceLibrary(true)} style={{
+                      width: '100%', padding: '14px', background: 'transparent',
+                      border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10,
+                      color: '#080808', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+                      cursor: 'pointer', transition: 'all 0.2s', marginBottom: 12,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+                    }}>
+                      📚 Browse Voice Library →
+                    </button>
+
+                    {voices.length > 0 && (
                       <>
+                        <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9CA3AF', marginBottom: 8, marginTop: 4 }}>My Cloned Voices</p>
                         <div className="dash-voice-grid">
                           {voices.map(v => (
-                            <div key={v.id} className={`dash-voice-chip ${selectedVoice?.id === v.id ? 'selected' : ''}`} onClick={() => setSelectedVoice(selectedVoice?.id === v.id ? null : v)}>
+                            <div key={v.id} className={`dash-voice-chip ${selectedVoice?.id === v.id ? 'selected' : ''}`} onClick={() => { setSelectedVoice(selectedVoice?.id === v.id ? null : v); setSelectedDefaultVoice(null); setSessionVoiceFile(null); setSessionVoiceFileName(''); }}>
                               <div className="dash-voice-chip-check" />
                               <p className="dash-voice-chip-name">{v.name}</p>
                               <p className="dash-voice-chip-meta">{v.language} · {v.gender}</p>
                             </div>
                           ))}
                         </div>
-                        <p style={{ fontSize: 11, fontWeight: 500, color: '#9CA3AF', marginTop: 8 }}>OR UPLOAD FOR THIS SESSION ONLY</p>
                       </>
-                    ) : (
-                      <p className="dash-no-voices">No saved voices yet. {isPaid ? 'Clone a voice first.' : 'Upgrade to save voices.'}</p>
                     )}
-                    <div className="dash-upload-zone" style={{ marginTop: 12 }}>
-                      <input ref={sessionInputRef} type="file" accept="audio/*" onChange={e => { const f = e.target.files?.[0]; if (f) { setSessionVoiceFile(f); setSessionVoiceFileName(f.name); setSelectedVoice(null); } }} />
+
+                    <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9CA3AF', marginBottom: 8, marginTop: 14 }}>Or upload for this session</p>
+                    <div className="dash-upload-zone">
+                      <input ref={sessionInputRef} type="file" accept="audio/*" onChange={e => { const f = e.target.files?.[0]; if (f) { setSessionVoiceFile(f); setSessionVoiceFileName(f.name); setSelectedVoice(null); setSelectedDefaultVoice(null); setVoiceDesign(''); } }} />
                       {sessionVoiceFileName ? <p className="dash-upload-selected">✓ {sessionVoiceFileName}</p> : (<><p className="dash-upload-title">Upload voice sample</p><p className="dash-upload-sub">MP3, WAV · 10–30 seconds</p></>)}
+                    </div>
+
+                    <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9CA3AF', marginBottom: 8, marginTop: 18 }}>Or describe a voice</p>
+                    <div style={{ position: 'relative' }}>
+                      <textarea
+                        value={voiceDesign}
+                        onChange={e => {
+                          if (e.target.value.length <= 200) {
+                            setVoiceDesign(e.target.value);
+                            if (e.target.value.trim()) {
+                              setSessionVoiceFile(null);
+                              setSessionVoiceFileName('');
+                              setSelectedVoice(null);
+                              setSelectedDefaultVoice(null);
+                            }
+                          }
+                        }}
+                        placeholder="Describe your voice... e.g. A warm, professional female voice with a slight British accent"
+                        style={{
+                          width: '100%', minHeight: 72, resize: 'none',
+                          background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)',
+                          borderRadius: 10, padding: '12px 36px 12px 14px',
+                          color: '#080808', fontFamily: 'inherit', fontSize: 13,
+                          lineHeight: 1.6, outline: 'none',
+                          transition: 'border-color 0.3s, box-shadow 0.3s',
+                        }}
+                        onFocus={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,0,0,0.04)'; }}
+                        onBlur={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.boxShadow = 'none'; }}
+                      />
+                      {voiceDesign && (
+                        <button
+                          onClick={() => setVoiceDesign('')}
+                          style={{
+                            position: 'absolute', top: 10, right: 10,
+                            width: 22, height: 22, borderRadius: 6,
+                            border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.03)',
+                            color: '#9CA3AF', fontSize: 12, fontWeight: 600,
+                            cursor: 'pointer', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', fontFamily: 'inherit',
+                            transition: 'all 0.2s', lineHeight: 1, padding: 0,
+                          }}
+                        >✕</button>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+                      <p style={{ fontSize: 11, color: '#9CA3AF', margin: 0, lineHeight: 1.4 }}>Works for English, Chinese, Japanese, Korean, German, French, Russian, Portuguese, Spanish, Italian</p>
+                      <span style={{ fontSize: 11, color: voiceDesign.length >= 180 ? '#ef4444' : '#9CA3AF', flexShrink: 0, marginLeft: 12 }}>{200 - voiceDesign.length}</span>
                     </div>
                   </div>
                 </div>
@@ -764,6 +894,10 @@ export default function Dashboard() {
                       <div>
                         <div className="dash-slider-label">Pitch <span>{pitch > 0 ? `+${pitch}` : pitch}</span></div>
                         <input type="range" min="-10" max="10" step="1" value={pitch} onChange={e => setPitch(parseInt(e.target.value))} />
+                      </div>
+                      <div>
+                        <div className="dash-slider-label">VOLUME <span>{volume.toFixed(1)}x</span></div>
+                        <input type="range" min="0.5" max="2.0" step="0.1" value={volume} onChange={e => setVolume(parseFloat(e.target.value))} />
                       </div>
                       <div>
                         <div className="dash-slider-label">EMOTION <span>{emotion.toFixed(2)}</span></div>
@@ -1026,6 +1160,25 @@ X-Chars-Remaining   Characters left in your quota`}</div>
 
         </main>
       </div>
+
+      <VoiceLibrary
+        isOpen={showVoiceLibrary}
+        onClose={() => setShowVoiceLibrary(false)}
+        onSelect={(voice, type) => {
+          if (type === 'default') {
+            setSelectedDefaultVoice(voice as DefaultVoice);
+            setSelectedVoice(null);
+          } else {
+            setSelectedVoice(voice as Voice);
+            setSelectedDefaultVoice(null);
+          }
+          setSessionVoiceFile(null);
+          setSessionVoiceFileName('');
+          setShowVoiceLibrary(false);
+        }}
+        selectedVoiceId={selectedDefaultVoice?.id ?? selectedVoice?.id ?? null}
+        userId={user?.id || ''}
+      />
     </>
   );
 }
