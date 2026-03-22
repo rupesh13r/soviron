@@ -322,6 +322,15 @@ export default function Dashboard() {
                     });
                 }
                 else if (dataObj.type === 'done') {
+                    if (dataObj.audio_b64) {
+                        const byteChars = window.atob(dataObj.audio_b64);
+                        const byteNumbers = new Array(byteChars.length);
+                        for (let i = 0; i < byteChars.length; i++) { byteNumbers[i] = byteChars.charCodeAt(i); }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: `audio/${format}` });
+                        const finalUrl = URL.createObjectURL(blob);
+                        setAudioUrl(prevUrl => { if (prevUrl) URL.revokeObjectURL(prevUrl); return finalUrl; });
+                    }
                     setGenStatus(`Generation complete ✓`);
                     setGenerationComplete(true);
                     
