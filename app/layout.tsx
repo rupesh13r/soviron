@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     canonical: "https://www.soviron.tech",
   },
   icons: {
-    icon: "/favicon.svg",
+    icon: "/favicon.png",
   },
 };
 
