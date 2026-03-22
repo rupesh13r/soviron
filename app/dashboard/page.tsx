@@ -250,7 +250,7 @@ export default function Dashboard() {
 
       const { data: { session } } = await supabase.auth.getSession();
       
-      const res = await fetch(`https://soviron-proxy.azurewebsites.net/generate`, {
+      const res = await fetch(`https://soviron-proxy-334768023018.us-east4.run.app/generate`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
