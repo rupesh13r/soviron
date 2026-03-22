@@ -54,6 +54,7 @@ export default function Dashboard() {
   // Audio handling state and refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioChunksRef = useRef<Uint8Array[]>([]);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const [generationComplete, setGenerationComplete] = useState(false);
 
   // Clone tab
@@ -250,7 +251,9 @@ export default function Dashboard() {
 
       const { data: { session } } = await supabase.auth.getSession();
       
+      abortControllerRef.current = new AbortController();
       const res = await fetch(`https://soviron-proxy-334768023018.us-east4.run.app/generate`, {
+        signal: abortControllerRef.current.signal,
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -932,13 +935,10 @@ export default function Dashboard() {
                   </div>
                   <div className="dash-card dash-card-accent">
                     <p className="dash-card-title">04 — Generate</p>
-                    <button className="dash-gen-btn" onClick={handleGenerate} disabled={generating || !text.trim() || text.length > 40000}>
+                    <button className="dash-gen-btn" onClick={generating ? () => { abortControllerRef.current?.abort(); setGenerating(false); setGenStatus("Generation cancelled."); } : handleGenerate} disabled={!text.trim() || text.length > 40000} style={generating ? { background: "#ef4444" } : {}}>
                       {generating ? (
                           <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                             Generating... 
-                             <motion.div animate={{ opacity:[0.3,1,0.3] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-white rounded-full ml-1" />
-                             <motion.div animate={{ opacity:[0.3,1,0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-white rounded-full" />
-                             <motion.div animate={{ opacity:[0.3,1,0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-white rounded-full" />
+                             Cancel ✕
                           </span>
                       ) : 'Generate Speech →'}
                     </button>
