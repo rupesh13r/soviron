@@ -22,7 +22,7 @@ const plans = [
     price: "0",
     description: "Try it out, no commitment",
     features: [
-      "5,000 characters/month",
+      "5,000 characters on signup",
       "Standard voice quality",
       "Community support",
     ],
@@ -31,7 +31,7 @@ const plans = [
   },
   {
     name: "Starter",
-    price: "79",
+    price: "149",
     description: "Perfect for creators getting started",
     features: [
       "50,000 characters/month",
@@ -44,10 +44,10 @@ const plans = [
   },
   {
     name: "Standard",
-    price: "149",
+    price: "299",
     description: "For professionals and growing creators",
     features: [
-      "100,000 characters/month",
+      "120,000 characters/month",
       "Save up to 5 voices",
       "Premium voice quality",
       "Priority support",
@@ -58,10 +58,10 @@ const plans = [
   },
   {
     name: "Creator",
-    price: "349",
+    price: "599",
     description: "For high-volume creators with API needs",
     features: [
-      "300,000 characters/month",
+      "270,000 characters/month",
       "API access",
       "Priority support",
       "Top-ups available",
@@ -71,10 +71,10 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "699",
+    price: "999",
     description: "For power users and small teams",
     features: [
-      "700,000 characters/month",
+      "500,000 characters/month",
       "API access",
       "Priority support",
       "Top-ups available",
@@ -84,10 +84,10 @@ const plans = [
   },
   {
     name: "Studio",
-    price: "1,299",
+    price: "1,899",
     description: "For teams and enterprises",
     features: [
-      "1,500,000 characters/month",
+      "1,000,000 characters/month",
       "Full API access",
       "Dedicated support",
       "Unlimited voice saves",
@@ -99,9 +99,9 @@ const plans = [
 ];
 
 const topups = [
-  { chars: "50k", price: "79", topupKey: "50k" },
-  { chars: "200k", price: "249", topupKey: "200k" },
-  { chars: "1M", price: "799", topupKey: "1m" },
+  { chars: "50k", price: "179", topupKey: "50k" },
+  { chars: "200k", price: "649", topupKey: "200k" },
+  { chars: "1M", price: "2,899", topupKey: "1m" },
 ];
 
 export function Pricing() {
