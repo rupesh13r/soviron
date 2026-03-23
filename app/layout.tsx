@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Soviron — AI Text to Speech & Voice Cloning for Indian Languages",
+  title: "Soviron — Studio-Quality Voiceovers with AI",
   description: "Generate natural AI voices in Hindi, Tamil, Telugu, and more. Clone any voice in seconds. Free to start — no credit card required.",
   keywords: "text to speech India, Hindi TTS, voice cloning India, AI voice generator, Indian languages TTS, Hindi text to speech",
   metadataBase: new URL("https://www.soviron.tech"),
