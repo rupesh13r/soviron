@@ -21,7 +21,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  // Validate topup key
   if (!topup || !Object.keys(TOPUPS).includes(topup)) {
     return NextResponse.json({ error: 'Invalid topup.' }, { status: 400 })
   }
@@ -36,7 +35,6 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Add chars to existing limit
   const { data: profile } = await supabase
     .from('profiles')
     .select('chars_limit')

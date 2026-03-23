@@ -4,11 +4,11 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 
 const PLAN_IDS: Record<string, { amount: number; chars_limit: number }> = {
-  starter:  { amount: 7900,   chars_limit: 50000 },
-  standard: { amount: 14900,  chars_limit: 100000 },
-  creator:  { amount: 34900,  chars_limit: 300000 },
-  pro:      { amount: 69900,  chars_limit: 700000 },
-  studio:   { amount: 129900, chars_limit: 1500000 },
+  starter:  { amount: 14900,  chars_limit: 50000 },
+  standard: { amount: 29900,  chars_limit: 120000 },
+  creator:  { amount: 59900,  chars_limit: 270000 },
+  pro:      { amount: 99900,  chars_limit: 500000 },
+  studio:   { amount: 189900, chars_limit: 1000000 },
 }
 
 export async function POST(request: Request) {

@@ -2,9 +2,9 @@ import Razorpay from 'razorpay'
 import { NextResponse } from 'next/server'
 
 const TOPUPS: Record<string, { amount: number; chars: number }> = {
-  '50k':  { amount: 7900,  chars: 50000 },
-  '200k': { amount: 24900, chars: 200000 },
-  '1m':   { amount: 79900, chars: 1000000 },
+  '50k':  { amount: 17900,  chars: 50000 },
+  '200k': { amount: 64900,  chars: 200000 },
+  '1m':   { amount: 289900, chars: 1000000 },
 }
 
 export async function POST(request: Request) {

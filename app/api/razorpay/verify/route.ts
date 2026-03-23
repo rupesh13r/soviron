@@ -5,10 +5,10 @@ import { createServerClient } from '@supabase/ssr'
 
 const PLAN_LIMITS: Record<string, { chars_limit: number }> = {
   starter:  { chars_limit: 50000 },
-  standard: { chars_limit: 100000 },
-  creator:  { chars_limit: 300000 },
-  pro:      { chars_limit: 700000 },
-  studio:   { chars_limit: 1500000 },
+  standard: { chars_limit: 120000 },
+  creator:  { chars_limit: 270000 },
+  pro:      { chars_limit: 500000 },
+  studio:   { chars_limit: 1000000 },
 }
 
 export async function POST(request: Request) {
@@ -23,7 +23,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  // Validate plan is a known plan
   const validPlans = Object.keys(PLAN_LIMITS);
   if (!plan || !validPlans.includes(plan)) {
     return NextResponse.json({ error: 'Invalid plan.' }, { status: 400 })
