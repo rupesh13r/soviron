@@ -14,18 +14,18 @@ const loadRazorpayScript = () => new Promise<void>((resolve) => {
 });
 
 const plans = [
-  { name: 'Free', price: 0, chars: '5,000', period: '/ forever', features: ['5,000 characters per month', 'Upload voice sample each time', 'WAV download', 'Standard speed'], cta: 'Get Started', ctaHref: '/signup', planKey: null, style: 'outline' },
-  { name: 'Starter', price: 79, chars: '50,000', period: '/ month', features: ['50,000 characters per month', 'Upload voice sample each time', 'WAV download', 'Standard speed'], cta: 'Get Starter', ctaHref: null, planKey: 'starter', style: 'outline' },
-  { name: 'Standard', price: 149, chars: '100,000', period: '/ month', features: ['100,000 characters per month', 'Save up to 5 voice profiles', 'WAV download', 'Priority speed'], cta: 'Get Standard', ctaHref: null, planKey: 'standard', style: 'solid', badge: 'POPULAR' },
-  { name: 'Creator', price: 349, chars: '300,000', period: '/ month', features: ['300,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access'], cta: 'Get Creator', ctaHref: null, planKey: 'creator', style: 'outline' },
-  { name: 'Pro', price: 699, chars: '700,000', period: '/ month', features: ['700,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access'], cta: 'Get Pro', ctaHref: null, planKey: 'pro', style: 'outline' },
-  { name: 'Studio', price: 1299, chars: '1,500,000', period: '/ month', features: ['1,500,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access', 'Dedicated support'], cta: 'Get Studio', ctaHref: null, planKey: 'studio', style: 'outline' },
+  { name: 'Free', price: 0, chars: '5,000', period: '/ one-time', features: ['5,000 characters on signup', 'Upload voice sample each time', 'WAV download', 'Standard speed'], cta: 'Get Started', ctaHref: '/signup', planKey: null, style: 'outline' },
+  { name: 'Starter', price: 149, chars: '50,000', period: '/ month', features: ['50,000 characters per month', 'Upload voice sample each time', 'WAV download', 'Standard speed'], cta: 'Get Starter', ctaHref: null, planKey: 'starter', style: 'outline' },
+  { name: 'Standard', price: 299, chars: '120,000', period: '/ month', features: ['120,000 characters per month', 'Save up to 5 voice profiles', 'WAV download', 'Priority speed'], cta: 'Get Standard', ctaHref: null, planKey: 'standard', style: 'solid', badge: 'POPULAR' },
+  { name: 'Creator', price: 599, chars: '270,000', period: '/ month', features: ['270,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access'], cta: 'Get Creator', ctaHref: null, planKey: 'creator', style: 'outline' },
+  { name: 'Pro', price: 999, chars: '500,000', period: '/ month', features: ['500,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access'], cta: 'Get Pro', ctaHref: null, planKey: 'pro', style: 'outline' },
+  { name: 'Studio', price: 1899, chars: '1,000,000', period: '/ month', features: ['1,000,000 characters per month', 'Save up to 5 voice profiles', 'Priority speed', 'API access', 'Dedicated support'], cta: 'Get Studio', ctaHref: null, planKey: 'studio', style: 'outline' },
 ];
 
 const topups = [
-  { chars: '50k chars', price: 79, topupKey: '50k' },
-  { chars: '200k chars', price: 249, topupKey: '200k' },
-  { chars: '1M chars', price: 799, topupKey: '1m' },
+  { chars: '50k chars', price: 179, topupKey: '50k' },
+  { chars: '200k chars', price: 649, topupKey: '200k' },
+  { chars: '1M chars', price: 2899, topupKey: '1m' },
 ];
 
 export default function PricingPage() {
